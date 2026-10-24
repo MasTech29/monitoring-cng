@@ -58,12 +58,12 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <div class="row2"><input type="number" id="cFactor" value="1.885348402" step="0.000000001" oninput="calcLive()"><input type="text" id="tOper" value="28"></div>
 </div>
 <img id="preview" style="display:none;width:100%;border-radius:10px;margin-top:8px;max-height:160px;object-fit:cover">
-<button class="btn-save" id="btnSave" onclick="addData()">+ SIMPAN + HITUNG HARGA</button>
+<button class="btn-save" id="btnSave" onclick="addData()">+ SIMPAN DATA </button>
 <button class="btn-cancel" id="btnCancel" onclick="cancelEdit()">BATAL EDIT</button>
 </div>
 
 <div class="card">
-<div class="row" style="justify-content:space-between"><h3 style="margin:0;font-size:13px">Rincian - NAMA + HARGA + AKSI</h3><div class="stat" id="totalData">0 data</div></div>
+<div class="row" style="justify-content:space-between"><h3 style="margin:0;font-size:13px">Rincian</h3><div class="stat" id="totalData">0 data</div></div>
 <div class="row" style="margin-top:10px"><button class="btn-excel" onclick="exportExcel()">📊 Excel + Harga</button><button class="btn-pdf" onclick="exportPDF()">📄 PDF + Harga (FIX)</button></div>
 <table id="tabel"></table>
 <button class="btn-del-all" onclick="askDeleteAll()">🗑️ Hapus Semua</button>
