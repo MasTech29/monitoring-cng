@@ -1,70 +1,86 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MONITORING CNG KP BULU - LIVE SYNC v17 FINAL</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONITORING CNG - LIVE SYNC FIREBASE v17</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-body{font-family:'JetBrains Mono',monospace;background:#020617;color:#e2e8f0}
-.orbitron{font-family:'Orbitron',sans-serif}
-.glass{background:rgba(15,23,42,0.8);backdrop-filter:blur(12px);border:1px solid rgba(51,65,85,0.5)}
-.live-dot{animation:pulse 2s infinite}
+body{font-family:Inter,sans-serif;background:#0f172a;color:white;padding:14px;margin:0;padding-bottom:30px}
+h1{color:#22c55e;font-size:15px;margin:0 0 12px 0}
+.card{background:#1e293b;padding:12px;border-radius:14px;margin-bottom:12px;overflow-x:auto}
+.row{display:flex;gap:8px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input{width:100%;padding:11px;border-radius:10px;border:2px solid #334155;background:#0f172a;color:white;margin:5px 0;box-sizing:border-box}
+button{padding:11px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:6px;font-size:12px}
+.btn-save{background:#22c55e;color:#000;width:100%;font-size:14px}
+.btn-excel{background:#16a34a;color:white;flex:1}.btn-pdf{background:#f59e0b;color:#000;flex:1}
+.btn-del-all{background:#ef4444;color:white;width:100%;margin-top:10px}
+.thumb{width:36px;height:36px;object-fit:cover;border-radius:6px}
+table{width:100%;font-size:10px;border-collapse:collapse;margin-top:10px;min-width:1050px}
+th,td{border-bottom:1px solid #334155;padding:7px 4px;text-align:left;white-space:nowrap}
+th{color:#fbbf24;background:#b91c1c;font-size:9px}
+.stat{font-size:11px;color:#94a3b8}.big{font-size:16px;font-weight:bold}.big-harga{font-size:12px;font-weight:bold;color:#fbbf24}
+canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
+.badge-cloud{font-size:9px;background:#22c55e;color:#000;padding:3px 8px;border-radius:12px;font-weight:bold}
+.footer{text-align:center;padding:20px 10px;margin-top:20px;border-top:1px solid #1e293b;color:#64748b;font-size:10px;line-height:1.5}
+.convert-box{background:linear-gradient(135deg,#0f172a,#14532d);border:2px solid #22c55e;border-radius:12px;padding:12px;margin:10px 0;text-align:center}
+.convert-big{font-size:18px;font-weight:bold;color:#22c55e}
+.live-dot{animation:pulse 2s infinite;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
-<body class="min-h-screen p-2 md:p-4">
-<div class="max-w-[1600px] mx-auto">
-<div class="glass rounded-2xl p-4 mb-4 flex flex-wrap justify-between items-center">
-<div>
-<h1 class="orbitron text-xl md:text-3xl font-bold text-cyan-400">MONITORING CNG KP BULU</h1>
-<p class="text-xs text-slate-400">LIVE SYNC • Firebase Realtime • v17 FINAL • cng-kpbulu</p>
-</div>
-<div class="flex items-center gap-3">
-<div class="flex items-center gap-2 bg-slate-900 px-3 py-2 rounded-full border border-slate-700">
-<div id="liveIndicator" class="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
-<span id="liveStatus" class="text-xs font-bold">CONNECTING...</span>
-</div>
-<span id="lastSync" class="text-[10px] text-slate-500"></span>
-</div>
+<body>
+<h1>⛽ CNG Kp.Bulu <span id="badge" class="badge-cloud">● CONNECTING FIREBASE...</span></h1>
+
+<div class="row">
+<div class="card" style="flex:1"><div class="stat">Hari Ini SM³</div><div class="big" id="todayUse">0 SM³</div><div class="stat" id="todayDetail">0 data</div></div>
+<div class="card" style="flex:1"><div class="stat">Bulan SM³ / Biaya</div><div class="big" id="monthUse">0 SM³</div><div class="big-harga" id="monthCost">Rp 0</div></div>
+<div class="card" style="flex:1"><div class="stat">Total Volume</div><div class="big-harga" id="todayCost">0 M³</div><div class="stat" id="totalDataTop">0 data</div></div>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-<div class="glass rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400">TOTAL TRAILER</p><p id="kpiTrailer" class="text-2xl font-bold text-white">0</p></div>
-<div class="glass rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400">AVG PRESSURE</p><p id="kpiPress" class="text-2xl font-bold text-cyan-400">0 PSI</p></div>
-<div class="glass rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400">ONLINE UNIT</p><p id="kpiOnline" class="text-2xl font-bold text-emerald-400">0</p></div>
-<div class="glass rounded-xl p-3 text-center"><p class="text-[10px] text-slate-400">LAST UPDATE</p><p id="kpiTime" class="text-xs font-bold text-white">-</p></div>
+<div class="card"><canvas id="chart" height="300"></canvas><div class="stat" style="text-align:center;margin-top:6px">PERHITUNGAN METERING - Basis SM³ - Correction 1.885348402 - Firebase cng-kpbulu LIVE</div></div>
+
+<div class="card">
+<div class="row2"><input type="text" id="nama" placeholder="Nama (AQIL)" style="border-color:#22c55e"><input type="date" id="tgl"></div>
+<div class="row2"><input type="number" id="awal" placeholder="Meter Awal 34512.33" step="0.01" oninput="calcLive()"><input type="number" id="akhir" placeholder="Meter Akhir 34562.19" step="0.01" oninput="calcLive()"></div>
+<div class="row2"><input type="number" id="harga" value="12000" placeholder="Harga per SM³ Rp 12000" oninput="calcLive()"><input type="file" id="foto" accept="image/*" capture="environment"></div>
+
+<div class="convert-box" id="liveConvert" style="display:none">
+<div class="stat">LIVE HITUNG BAST</div>
+<div class="convert-big" id="convertText">0 M³ = 0 SM³</div>
+<div class="stat" id="hargaText">Harga Rp 12.000 × 94 SM³ = Rp 1.128.000</div>
+<div class="stat" id="factorText">Correction: 1.885348402 | Tekanan 0.9 Bar</div>
 </div>
 
-<div class="glass rounded-2xl p-4 mb-4">
-<h2 class="orbitron text-sm font-bold text-amber-400 mb-3">+ INPUT DATA TRAILER (Auto Sync Semua Laptop)</h2>
-<div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-<input id="inNo" placeholder="No. Polisi / ID" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-<input id="inPress" type="number" placeholder="Pressure PSI" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-<input id="inVol" type="number" placeholder="Volume m3" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-<select id="inStatus" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-<option value="ONLINE">ONLINE</option>
-<option value="OFFLINE">OFFLINE</option>
-<option value="MAINTENANCE">MAINTENANCE</option>
-<option value="EMPTY">EMPTY</option>
-</select>
-<input id="inLoc" placeholder="Lokasi" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
-<button onclick="addData()" class="bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg px-4 py-2 text-sm">SIMPAN & SYNC 🚀</button>
+<div style="margin-top:8px;background:#0f172a;padding:8px;border-radius:10px;border:1px solid #334155">
+<div class="row2"><input type="text" id="seriMeter" value="LANDIS+GYR 750HP HP37449"><input type="number" id="pTek" value="0.9" step="0.1"></div>
+<div class="row2"><input type="number" id="cFactor" value="1.885348402" step="0.000000001" oninput="calcLive()"><input type="text" id="tOper" value="28"></div>
 </div>
+<img id="preview" style="display:none;width:100%;border-radius:10px;margin-top:8px;max-height:160px;object-fit:cover">
+<button class="btn-save" onclick="addData()">+ SIMPAN + SYNC KE SEMUA LAPTOP 🚀</button>
 </div>
 
-<div class="glass rounded-2xl p-3 overflow-x-auto">
-<table class="w-full text-sm">
-<thead><tr class="text-[10px] text-slate-400 border-b border-slate-700"><th class="text-left p-2">NO</th><th class="text-left p-2">POLISI / ID</th><th class="text-left p-2">PRESSURE</th><th class="text-left p-2">VOLUME</th><th class="text-left p-2">STATUS</th><th class="text-left p-2">LOKASI</th><th class="text-left p-2">WAKTU</th><th class="text-left p-2">AKSI</th></tr></thead>
-<tbody id="tableBody"></tbody>
-</table>
+<div class="card">
+<div class="row" style="justify-content:space-between"><h3 style="margin:0;font-size:13px">Rincian + Harga (Firebase Live)</h3><div class="stat" id="totalData">0 data</div></div>
+<div class="row" style="margin-top:10px"><button class="btn-excel" onclick="exportExcel()">📊 Excel + Harga</button><button class="btn-pdf" onclick="exportPDF()">📄 PDF + Harga (FIX)</button></div>
+<table id="tabel"></table>
+<button class="btn-del-all" onclick="askDeleteAll()">🗑️ Hapus Semua (Sync All)</button>
 </div>
+
+<div class="card" style="background:#0f172a;border:1px solid #334155">
+<b style="font-size:12px">RINGKASAN PEMAKAIAN</b>
+<div class="stat" id="ringTotalSM">Total Pemakaian : 0 SM³</div>
+<div class="stat" id="ringTotalM">Total Volume M³ : 0 M³</div>
+<div class="stat" id="ringTotalRp" style="color:#22c55e;font-weight:bold;font-size:13px">Total Biaya : Rp 0</div>
+<div class="stat">Firebase: cng-kpbulu-default-rtdb.firebaseio.com | Tekanan 200 Bar | Status: LIVE SYNC AKTIF</div>
 </div>
+
+<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech - Firebase LIVE SYNC v17</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD7Ec-_5C-eVXVzUhQxxNgyHU2WCUHE2sA",
@@ -76,53 +92,72 @@ const firebaseConfig = {
   appId: "1:976465353369:web:4a26d31dbb2bc6e13a3608",
   measurementId: "G-8BK9M7W0Y2"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dataRef = ref(db, 'monitoring/cng-kpbulu');
+const dbRef = ref(db, 'cng-bulu/bastData');
 
-function updateUI(dataObj){
-  const list = dataObj ? Object.entries(dataObj).map(([key,val])=>({key,...val})).sort((a,b)=>b.timestamp-a.timestamp) : [];
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-  let totalPress = 0, online = 0;
-  list.forEach((item,idx)=>{
-    totalPress+= Number(item.pressure||0);
-    if(item.status==='ONLINE') online++;
-    const color = item.status==='ONLINE'?'text-emerald-400':item.status==='OFFLINE'?'text-red-400':item.status==='EMPTY'?'text-slate-400':'text-amber-400';
-    tbody.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30"><td class="p-2">${idx+1}</td><td class="p-2 font-bold text-cyan-300">${item.nopol}</td><td class="p-2">${item.pressure} PSI</td><td class="p-2">${item.volume} m3</td><td class="p-2 font-bold ${color}">${item.status}</td><td class="p-2">${item.lokasi}</td><td class="p-2 text-[11px] text-slate-400">${item.waktu}</td><td class="p-2"><button onclick="delData('${item.key}')" class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs">Hapus</button></td></tr>`;
+// --- LOGIC ASLI LU (TETAP) ---
+var data=[];var fotoBase64="";
+function getRealtimeDate(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0')+"-"+String(n.getDate()).padStart(2,'0');}
+function getRealtimeMonth(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0');}
+function getRealtimeTime(){var n=new Date();return n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+" WIB";}
+function getFactor(){return parseFloat(document.getElementById("cFactor").value)||1.885348402;}
+window.calcLive=function(){var awal=parseFloat(document.getElementById("awal").value);var akhir=parseFloat(document.getElementById("akhir").value);var harga=parseFloat(document.getElementById("harga").value)||0;if(isNaN(awal)||isNaN(akhir)||akhir<=awal){document.getElementById("liveConvert").style.display="none";return;}var vol=+(akhir-awal).toFixed(2);var factor=getFactor();var sm3=+(vol*factor).toFixed(2);var total=sm3*harga;document.getElementById("liveConvert").style.display="block";document.getElementById("convertText").innerText=vol+" M³ = "+sm3+" SM³";document.getElementById("hargaText").innerText="Rp "+harga.toLocaleString()+" × "+sm3+" SM³ = Rp "+total.toLocaleString();document.getElementById("factorText").innerText="Correction "+factor+" | Tekanan "+document.getElementById("pTek").value+" Bar";}
+document.getElementById("tgl").value=getRealtimeDate();
+var lastNama=localStorage.getItem("cngLastNama")||"";if(lastNama)document.getElementById("nama").value=lastNama;
+document.getElementById("foto").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){fotoBase64=ev.target.result;document.getElementById("preview").src=fotoBase64;document.getElementById("preview").style.display="block";};r.readAsDataURL(f);});
+
+// --- FIREBASE SYNC (GG NPOINT LAGI) ---
+function loadCloudFirebase(){
+  onValue(dbRef, (snapshot)=>{
+    const val = snapshot.val();
+    if(Array.isArray(val)){ data = val; } else if(val){ data = Object.values(val); } else { data = []; }
+    // filter null
+    data = data.filter(Boolean);
+    document.getElementById("badge").innerHTML="<span class='live-dot' style='background:#22c55e'></span> LIVE SYNC AKTIF • "+data.length+" data";
+    document.getElementById("badge").style.background="#22c55e";
+    render();
+  }, (err)=>{
+    document.getElementById("badge").innerText="● FIREBASE ERROR: "+err.message;
   });
-  document.getElementById('kpiTrailer').innerText = list.length;
-  document.getElementById('kpiPress').innerText = list.length? Math.round(totalPress/list.length)+' PSI':'0 PSI';
-  document.getElementById('kpiOnline').innerText = online;
-  document.getElementById('kpiTime').innerText = new Date().toLocaleTimeString('id-ID');
-  document.getElementById('lastSync').innerText = 'Sync: '+new Date().toLocaleTimeString('id-ID');
 }
+async function saveCloud(){ try{ await set(dbRef, data); }catch(e){ console.log("save error",e); } }
 
-onValue(dataRef, (snap)=>{
-  document.getElementById('liveIndicator').className='w-2 h-2 bg-emerald-500 rounded-full live-dot';
-  document.getElementById('liveStatus').innerText='LIVE SYNC AKTIF';
-  document.getElementById('liveStatus').className='text-xs font-bold text-emerald-400';
-  updateUI(snap.val());
-});
+// --- RENDER & CHART (SAMA) ---
+function drawLine(){var c=document.getElementById("chart");var ctx=c.getContext("2d");var dpr=window.devicePixelRatio||2;var W=c.width=c.offsetWidth*dpr;var H=c.height=300*dpr;ctx.clearRect(0,0,W,H);var month=getRealtimeMonth();var map={};var maxDay=0;for(var i=0;i<data.length;i++){if(data[i].tgl.slice(0,7)===month){map[data[i].tgl]=(map[data[i].tgl]||0)+(data[i].sm3||0);var day=parseInt(data[i].tgl.slice(8,10));if(day>maxDay)maxDay=day;}}if(maxDay==0)maxDay=new Date().getDate();var labels=[],vals=[];for(var d=1;d<=maxDay;d++){var ds=month+"-"+String(d).padStart(2,'0');labels.push(ds);vals.push(map[ds]||0);}if(labels.length==0){ctx.fillStyle="#475569";ctx.font=(24*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText("Belum ada data",W/2,H/2);return;}var max=Math.max.apply(null,vals)*1.4;if(max<100)max=100;var leftPad=90*dpr,rightPad=30*dpr,topPad=50*dpr,bottomPad=55*dpr;var chartW=W-leftPad-rightPad,chartH=H-topPad-bottomPad;ctx.strokeStyle="#1e293b";ctx.lineWidth=1;ctx.fillStyle="#64748b";ctx.font=(18*dpr)+"px sans-serif";ctx.textAlign="right";for(var i=0;i<=4;i++){var y=topPad+i*chartH/4;ctx.beginPath();ctx.moveTo(leftPad,y);ctx.lineTo(W-rightPad,y);ctx.stroke();ctx.fillText(Math.round(max-i*max/4)+" SM³",leftPad-12*dpr,y+6*dpr);}ctx.strokeStyle="#22c55e";ctx.lineWidth=4*dpr;ctx.beginPath();ctx.lineJoin="round";ctx.lineCap="round";for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();ctx.lineTo(leftPad+chartW,topPad+chartH);ctx.lineTo(leftPad,topPad+chartH);ctx.closePath();ctx.fillStyle="rgba(34,197,94,0.18)";ctx.fill();for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(vals[i]>0){ctx.fillStyle="#ffffff";ctx.font="bold "+(16*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(vals[i].toFixed(0)+" SM³",x,y-24*dpr);}ctx.fillStyle="#94a3b8";ctx.font=(14*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(labels[i].slice(8,10),x,topPad+chartH+24*dpr);}}
+function render(){var totalM=0,totalSM=0,totalCost=0,todaySM=0,todayM=0;var realToday=getRealtimeDate();var realMonth=getRealtimeMonth();var html="<tr><th>NO</th><th>TANGGAL</th><th>METER AWAL</th><th>METER AKHIR</th><th>VOLUME</th><th>CORRECTION</th><th>TOTAL SM³</th><th>HARGA</th><th>TOTAL HARGA</th><th>KETERANGAN</th><th>FOTO</th></tr>";for(var i=0;i<data.length;i++){var d=data[i];var f=d.foto?"<img src='"+d.foto+"' class='thumb'>":"-";var harga=d.harga||12000;var totRp=d.totalRp||d.sm3*harga;html+="<tr><td>"+(i+1)+"</td><td>"+d.tgl+"</td><td>"+d.awal+"</td><td>"+d.akhir+"</td><td>"+d.pakai.toFixed(2)+"</td><td>"+(d.factor||1.8853).toFixed(4)+"</td><td style='color:#22c55e'><b>"+d.sm3.toFixed(2)+" SM³</b></td><td>Rp "+harga.toLocaleString()+"</td><td style='color:#fbbf24'><b>Rp "+Math.round(totRp).toLocaleString()+"</b></td><td>"+(d.nama||"-")+"</td><td>"+f+"</td></tr>";if(d.tgl.slice(0,7)===realMonth){totalM+=d.pakai;totalSM+=d.sm3;totalCost+=totRp;}if(d.tgl===realToday){todayM+=d.pakai;todaySM+=d.sm3;}}document.getElementById("tabel").innerHTML=html;document.getElementById("monthUse").innerText=totalSM.toFixed(2)+" SM³";document.getElementById("monthCost").innerText="Rp "+Math.round(totalCost).toLocaleString();document.getElementById("todayUse").innerText=todaySM.toFixed(2)+" SM³";document.getElementById("todayCost").innerText=todayM.toFixed(2)+" M³";document.getElementById("totalData").innerText=data.length+" data";document.getElementById("totalDataTop").innerText=data.length+" data";document.getElementById("todayDetail").innerText=todayM.toFixed(2)+" M³ = "+todaySM.toFixed(2)+" SM³";document.getElementById("ringTotalSM").innerText="Total Pemakaian : "+totalSM.toFixed(2)+" SM³";document.getElementById("ringTotalM").innerText="Total Volume M³ : "+totalM.toFixed(2)+" M³";document.getElementById("ringTotalRp").innerText="Total Biaya : Rp "+Math.round(totalCost).toLocaleString();drawLine();}
 
-window.addData = async ()=>{
-  const nopol = document.getElementById('inNo').value.trim();
-  const pressure = document.getElementById('inPress').value;
-  const volume = document.getElementById('inVol').value;
-  const status = document.getElementById('inStatus').value;
-  const lokasi = document.getElementById('inLoc').value.trim()||'KP BULU';
-  if(!nopol||!pressure){alert('Isi No Polisi & Pressure!');return;}
-  const waktu = new Date().toLocaleString('id-ID');
-  const newRef = push(dataRef);
-  await set(newRef, {nopol, pressure, volume, status, lokasi, waktu, timestamp: Date.now()});
-  document.getElementById('inNo').value='';document.getElementById('inPress').value='';document.getElementById('inVol').value='';
-};
+window.addData=async function(){var nama=document.getElementById("nama").value.trim();var tgl=document.getElementById("tgl").value.trim();var awal=parseFloat(document.getElementById("awal").value);var akhir=parseFloat(document.getElementById("akhir").value);var harga=parseFloat(document.getElementById("harga").value)||12000;if(nama===""){alert("Isi Nama");return;}if(isNaN(awal)||isNaN(akhir)){alert("Isi Awal Akhir");return}if(akhir<=awal){alert("Akhir > Awal");return}var vol=+(akhir-awal).toFixed(2);var factor=getFactor();var sm3=+(vol*factor).toFixed(2);var totalRp=sm3*harga;var seri=document.getElementById("seriMeter").value;data.push({tgl:tgl,nama:nama,awal:awal,akhir:akhir,pakai:vol,sm3:sm3,factor:factor,harga:harga,totalRp:totalRp,seri:seri,foto:fotoBase64});localStorage.setItem("cngLastNama",nama);render();await saveCloud();document.getElementById("awal").value="";document.getElementById("akhir").value="";document.getElementById("foto").value="";document.getElementById("preview").style.display="none";document.getElementById("liveConvert").style.display="none";fotoBase64="";}
 
-window.delData = async (key)=>{
-  if(!confirm('Hapus data ini di semua laptop?'))return;
-  await remove(ref(db, 'monitoring/cng-kpbulu/'+key));
-};
+window.exportExcel=function(){var ws_data=[["PERHITUNGAN METERING - CNG Kp.Bulu"],["Seri Meter: "+document.getElementById("seriMeter").value+" | Tekanan: "+document.getElementById("pTek").value+" Bar | Correction Factor: "+getFactor()+" | Basis Volume: SM³"],[],["NO","TANGGAL","METER AWAL","METER AKHIR","VOLUME M³","CORRECTION","TOTAL SM³","HARGA","TOTAL HARGA","KETERANGAN"]];for(var i=0;i<data.length;i++){ws_data.push([i+1,data[i].tgl,data[i].awal,data[i].akhir,data[i].pakai.toFixed(2),data[i].factor,data[i].sm3.toFixed(2),data[i].harga,data[i].totalRp,data[i].nama]);}var totalSM=data.reduce((a,b)=>a+b.sm3,0);var totalRp=data.reduce((a,b)=>a+b.totalRp,0);ws_data.push([]);ws_data.push(["RINGKASAN PEMAKAIAN"]);ws_data.push(["Total Pemakaian",totalSM.toFixed(2)+" SM³"]);ws_data.push(["Total Biaya","Rp "+Math.round(totalRp).toLocaleString()]);var ws=XLSX.utils.aoa_to_sheet(ws_data);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"BAST");XLSX.writeFile(wb,"BAST_CNG_HARGA_"+getRealtimeDate()+".xlsx");}
+window.exportPDF=function(){
+  try{
+    var {jsPDF}=window.jspdf;
+    var doc=new jsPDF('l','mm','a4');
+    doc.setFontSize(11);doc.setFont(undefined,'bold');
+    doc.text("PERHITUNGAN METERING - CNG Kp.Bulu - LIVE SYNC",14,10);
+    doc.setFontSize(8);doc.setFont(undefined,'normal');
+    doc.text("Seri: "+document.getElementById("seriMeter").value+" | Tekanan: "+document.getElementById("pTek").value+" Bar | Correction: "+getFactor()+" | Cetak: "+getRealtimeDate()+" "+getRealtimeTime(),14,15);
+    var startY=22;
+    try{
+      var c=document.getElementById("chart");
+      var temp=document.createElement("canvas"); temp.width=900; temp.height=300;
+      var tCtx=temp.getContext("2d"); tCtx.drawImage(c,0,0,900,300);
+      var imgData=temp.toDataURL("image/jpeg",0.6);
+      doc.addImage(imgData,'JPEG',14,18,270,35); startY=56;
+    }catch(e){ startY=22; }
+    var body=[]; for(var i=0;i<data.length;i++){ body.push([i+1,data[i].tgl,data[i].awal,data[i].akhir,data[i].pakai.toFixed(2),data[i].factor.toFixed(4),data[i].sm3.toFixed(2)+" SM³","Rp "+data[i].harga.toLocaleString(),"Rp "+Math.round(data[i].totalRp).toLocaleString(),data[i].nama]); }
+    if(body.length==0){ alert("Belum ada data"); return; }
+    doc.autoTable({ head:[['NO','TANGGAL','METER AWAL','METER AKHIR','VOLUME','CORRECTION','TOTAL SM³','HARGA','TOTAL HARGA','KET']], body:body, startY:startY, styles:{fontSize:7}, headStyles:{fillColor:[185,28,28]} });
+    var y=doc.lastAutoTable.finalY+8; var totalSM=data.reduce((a,b)=>a+b.sm3,0); var totalRp=data.reduce((a,b)=>a+b.totalRp,0); var totalVol=data.reduce((a,b)=>a+b.pakai,0);
+    doc.setFont(undefined,'bold'); doc.text("RINGKASAN PEMAKAIAN",14,y); doc.setFont(undefined,'normal'); doc.text("Total: "+totalSM.toFixed(2)+" SM³ | Vol: "+totalVol.toFixed(2)+" M³ | Biaya: Rp "+Math.round(totalRp).toLocaleString(),14,y+6);
+    doc.save("BAST_CNG_HARGA_"+getRealtimeDate()+".pdf");
+  }catch(err){ alert("PDF Error: "+err.message); }
+}
+window.askDeleteAll=async function(){if(confirm("Hapus "+data.length+" data di SEMUA LAPTOP?")){data=[];render();await saveCloud();}}
+
+// START
+loadCloudFirebase();
 </script>
 </body>
 </html>
