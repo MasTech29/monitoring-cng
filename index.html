@@ -19,7 +19,7 @@ button{padding:11px;border:none;border-radius:10px;font-weight:bold;cursor:point
 .btn-excel{background:#16a34a;color:white;flex:1}.btn-pdf{background:#f59e0b;color:#000;flex:1}
 .btn-del-all{background:#ef4444;color:white;width:100%;margin-top:10px}
 .thumb{width:36px;height:36px;object-fit:cover;border-radius:6px}
-table{width:100%;font-size:10px;border-collapse:collapse;margin-top:10px;min-width:1050px}
+table{width:100%;font-size:10px;border-collapse:collapse;margin-top:10px;min-width:1150px}
 th,td{border-bottom:1px solid #334155;padding:7px 4px;text-align:left;white-space:nowrap}
 th{color:#fbbf24;background:#b91c1c;font-size:9px}
 .stat{font-size:11px;color:#94a3b8}.big{font-size:16px;font-weight:bold}.big-harga{font-size:12px;font-weight:bold;color:#fbbf24}
@@ -30,9 +30,11 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 .convert-big{font-size:18px;font-weight:bold;color:#22c55e}
 .live-dot{animation:pulse 2s infinite;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.b-aksi{display:flex;gap:4px;justify-content:center}
-.btn-edit{background:#ffca28;color:#000;border:none;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:11px}
-.btn-hapus{background:#ff4444;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:11px}
+/* === TAMBAHAN BARU TOMBOL AKSI === */
+.btn-edit{background:#fbbf24;color:#000;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:bold}
+.btn-hapus{background:#ef4444;color:#fff;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:bold;margin-left:3px}
+.btn-cancel{background:#64748b;color:#fff;width:100%;margin-top:6px;display:none}
+.mode-edit{border-color:#fbbf24 !important; box-shadow:0 0 10px rgba(251,191,36,.3)}
 </style>
 </head>
 <body>
@@ -46,7 +48,7 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 
 <div class="card"><canvas id="chart" height="300"></canvas><div class="stat" style="text-align:center;margin-top:6px">PERHITUNGAN METERING - Basis SM³ - Correction 1.885348402 - Firebase cng-kpbulu LIVE</div></div>
 
-<div class="card">
+<div class="card" id="cardForm">
 <div class="row2"><input type="text" id="nama" placeholder="Nama (AQIL)" style="border-color:#22c55e"><input type="date" id="tgl"></div>
 <div class="row2"><input type="number" id="awal" placeholder="Meter Awal 34512.33" step="0.01" oninput="calcLive()"><input type="number" id="akhir" placeholder="Meter Akhir 34562.19" step="0.01" oninput="calcLive()"></div>
 <div class="row2"><input type="number" id="harga" value="12000" placeholder="Harga per SM³ Rp 12000" oninput="calcLive()"><input type="file" id="foto" accept="image/*" capture="environment"></div>
@@ -63,7 +65,9 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <div class="row2"><input type="number" id="cFactor" value="1.885348402" step="0.000000001" oninput="calcLive()"><input type="text" id="tOper" value="28"></div>
 </div>
 <img id="preview" style="display:none;width:100%;border-radius:10px;margin-top:8px;max-height:160px;object-fit:cover">
-<button class="btn-save" onclick="addData()">+ SIMPAN DATA 🚀</button>
+<button class="btn-save" id="btnSimpanUtama" onclick="addData()">+ SIMPAN DATA 🚀</button>
+<button class="btn-cancel" id="btnBatalEdit" onclick="batalEdit()">BATAL EDIT ✖️</button>
+<div id="labelEdit" style="display:none;text-align:center;color:#fbbf24;font-size:11px;margin-top:6px;font-weight:bold"></div>
 </div>
 
 <div class="card">
@@ -101,8 +105,10 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db, 'cng-bulu/bastData');
 
-// --- LOGIC ASLI LU (TETAP) ---
 var data=[];var fotoBase64="";
+// === TAMBAHAN BARU ===
+var editIndex = null;
+
 function getRealtimeDate(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0')+"-"+String(n.getDate()).padStart(2,'0');}
 function getRealtimeMonth(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0');}
 function getRealtimeTime(){var n=new Date();return n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+" WIB";}
@@ -112,12 +118,10 @@ document.getElementById("tgl").value=getRealtimeDate();
 var lastNama=localStorage.getItem("cngLastNama")||"";if(lastNama)document.getElementById("nama").value=lastNama;
 document.getElementById("foto").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){fotoBase64=ev.target.result;document.getElementById("preview").src=fotoBase64;document.getElementById("preview").style.display="block";};r.readAsDataURL(f);});
 
-// --- FIREBASE SYNC (GG NPOINT LAGI) ---
 function loadCloudFirebase(){
   onValue(dbRef, (snapshot)=>{
     const val = snapshot.val();
     if(Array.isArray(val)){ data = val; } else if(val){ data = Object.values(val); } else { data = []; }
-    // filter null
     data = data.filter(Boolean);
     document.getElementById("badge").innerHTML="<span class='live-dot' style='background:#22c55e'></span> LIVE SYNC AKTIF • "+data.length+" data";
     document.getElementById("badge").style.background="#22c55e";
@@ -128,11 +132,68 @@ function loadCloudFirebase(){
 }
 async function saveCloud(){ try{ await set(dbRef, data); }catch(e){ console.log("save error",e); } }
 
-// --- RENDER & CHART (SAMA) ---
 function drawLine(){var c=document.getElementById("chart");var ctx=c.getContext("2d");var dpr=window.devicePixelRatio||2;var W=c.width=c.offsetWidth*dpr;var H=c.height=300*dpr;ctx.clearRect(0,0,W,H);var month=getRealtimeMonth();var map={};var maxDay=0;for(var i=0;i<data.length;i++){if(data[i].tgl.slice(0,7)===month){map[data[i].tgl]=(map[data[i].tgl]||0)+(data[i].sm3||0);var day=parseInt(data[i].tgl.slice(8,10));if(day>maxDay)maxDay=day;}}if(maxDay==0)maxDay=new Date().getDate();var labels=[],vals=[];for(var d=1;d<=maxDay;d++){var ds=month+"-"+String(d).padStart(2,'0');labels.push(ds);vals.push(map[ds]||0);}if(labels.length==0){ctx.fillStyle="#475569";ctx.font=(24*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText("Belum ada data",W/2,H/2);return;}var max=Math.max.apply(null,vals)*1.4;if(max<100)max=100;var leftPad=90*dpr,rightPad=30*dpr,topPad=50*dpr,bottomPad=55*dpr;var chartW=W-leftPad-rightPad,chartH=H-topPad-bottomPad;ctx.strokeStyle="#1e293b";ctx.lineWidth=1;ctx.fillStyle="#64748b";ctx.font=(18*dpr)+"px sans-serif";ctx.textAlign="right";for(var i=0;i<=4;i++){var y=topPad+i*chartH/4;ctx.beginPath();ctx.moveTo(leftPad,y);ctx.lineTo(W-rightPad,y);ctx.stroke();ctx.fillText(Math.round(max-i*max/4)+" SM³",leftPad-12*dpr,y+6*dpr);}ctx.strokeStyle="#22c55e";ctx.lineWidth=4*dpr;ctx.beginPath();ctx.lineJoin="round";ctx.lineCap="round";for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();ctx.lineTo(leftPad+chartW,topPad+chartH);ctx.lineTo(leftPad,topPad+chartH);ctx.closePath();ctx.fillStyle="rgba(34,197,94,0.18)";ctx.fill();for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(vals[i]>0){ctx.fillStyle="#ffffff";ctx.font="bold "+(16*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(vals[i].toFixed(0)+" SM³",x,y-24*dpr);}ctx.fillStyle="#94a3b8";ctx.font=(14*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(labels[i].slice(8,10),x,topPad+chartH+24*dpr);}}
-function render(){var totalM=0,totalSM=0,totalCost=0,todaySM=0,todayM=0;var realToday=getRealtimeDate();var realMonth=getRealtimeMonth();var html="<tr><th>NO</th><th>TANGGAL</th><th>METER AWAL</th><th>METER AKHIR</th><th>VOLUME</th><th>CORRECTION</th><th>TOTAL SM³</th><th>HARGA</th><th>TOTAL HARGA</th><th>KETERANGAN</th><th>FOTO</th></tr>";for(var i=0;i<data.length;i++){var d=data[i];var f=d.foto?"<img src='"+d.foto+"' class='thumb'>":"-";var harga=d.harga||12000;var totRp=d.totalRp||d.sm3*harga;html+="<tr><td>"+(i+1)+"</td><td>"+d.tgl+"</td><td>"+d.awal+"</td><td>"+d.akhir+"</td><td>"+d.pakai.toFixed(2)+"</td><td>"+(d.factor||1.8853).toFixed(4)+"</td><td style='color:#22c55e'><b>"+d.sm3.toFixed(2)+" SM³</b></td><td>Rp "+harga.toLocaleString()+"</td><td style='color:#fbbf24'><b>Rp "+Math.round(totRp).toLocaleString()+"</b></td><td>"+(d.nama||"-")+"</td><td>"+f+"</td></tr>";if(d.tgl.slice(0,7)===realMonth){totalM+=d.pakai;totalSM+=d.sm3;totalCost+=totRp;}if(d.tgl===realToday){todayM+=d.pakai;todaySM+=d.sm3;}}document.getElementById("tabel").innerHTML=html;document.getElementById("monthUse").innerText=totalSM.toFixed(2)+" SM³";document.getElementById("monthCost").innerText="Rp "+Math.round(totalCost).toLocaleString();document.getElementById("todayUse").innerText=todaySM.toFixed(2)+" SM³";document.getElementById("todayCost").innerText=todayM.toFixed(2)+" M³";document.getElementById("totalData").innerText=data.length+" data";document.getElementById("totalDataTop").innerText=data.length+" data";document.getElementById("todayDetail").innerText=todayM.toFixed(2)+" M³ = "+todaySM.toFixed(2)+" SM³";document.getElementById("ringTotalSM").innerText="Total Pemakaian : "+totalSM.toFixed(2)+" SM³";document.getElementById("ringTotalM").innerText="Total Volume M³ : "+totalM.toFixed(2)+" M³";document.getElementById("ringTotalRp").innerText="Total Biaya : Rp "+Math.round(totalCost).toLocaleString();drawLine();}
 
-window.addData=async function(){var nama=document.getElementById("nama").value.trim();var tgl=document.getElementById("tgl").value.trim();var awal=parseFloat(document.getElementById("awal").value);var akhir=parseFloat(document.getElementById("akhir").value);var harga=parseFloat(document.getElementById("harga").value)||12000;if(nama===""){alert("Isi Nama");return;}if(isNaN(awal)||isNaN(akhir)){alert("Isi Awal Akhir");return}if(akhir<=awal){alert("Akhir > Awal");return}var vol=+(akhir-awal).toFixed(2);var factor=getFactor();var sm3=+(vol*factor).toFixed(2);var totalRp=sm3*harga;var seri=document.getElementById("seriMeter").value;data.push({tgl:tgl,nama:nama,awal:awal,akhir:akhir,pakai:vol,sm3:sm3,factor:factor,harga:harga,totalRp:totalRp,seri:seri,foto:fotoBase64});localStorage.setItem("cngLastNama",nama);render();await saveCloud();document.getElementById("awal").value="";document.getElementById("akhir").value="";document.getElementById("foto").value="";document.getElementById("preview").style.display="none";document.getElementById("liveConvert").style.display="none";fotoBase64="";}
+function render(){
+  var totalM=0,totalSM=0,totalCost=0,todaySM=0,todayM=0;
+  var realToday=getRealtimeDate();var realMonth=getRealtimeMonth();
+  // === TAMBAHAN KOLOM AKSI ===
+  var html="<tr><th>NO</th><th>TANGGAL</th><th>METER AWAL</th><th>METER AKHIR</th><th>VOLUME</th><th>CORRECTION</th><th>TOTAL SM³</th><th>HARGA</th><th>TOTAL HARGA</th><th>KETERANGAN</th><th>FOTO</th><th>AKSI</th></tr>";
+  for(var i=0;i<data.length;i++){
+    var d=data[i];
+    var f=d.foto?"<img src='"+d.foto+"' class='thumb'>":"-";
+    var harga=d.harga||12000;
+    var totRp=d.totalRp||d.sm3*harga;
+    html+="<tr><td>"+(i+1)+"</td><td>"+d.tgl+"</td><td>"+d.awal+"</td><td>"+d.akhir+"</td><td>"+d.pakai.toFixed(2)+"</td><td>"+(d.factor||1.8853).toFixed(4)+"</td><td style='color:#22c55e'><b>"+d.sm3.toFixed(2)+" SM³</b></td><td>Rp "+harga.toLocaleString()+"</td><td style='color:#fbbf24'><b>Rp "+Math.round(totRp).toLocaleString()+"</b></td><td>"+(d.nama||"-")+"</td><td>"+f+"</td><td><button class='btn-edit' onclick='editData("+i+")'>✏️ Edit</button><button class='btn-hapus' onclick='hapusPerData("+i+")'>🗑️</button></td></tr>";
+    if(d.tgl.slice(0,7)===realMonth){totalM+=d.pakai;totalSM+=d.sm3;totalCost+=totRp;}
+    if(d.tgl===realToday){todayM+=d.pakai;todaySM+=d.sm3;}
+  }
+  document.getElementById("tabel").innerHTML=html;
+  document.getElementById("monthUse").innerText=totalSM.toFixed(2)+" SM³";
+  document.getElementById("monthCost").innerText="Rp "+Math.round(totalCost).toLocaleString();
+  document.getElementById("todayUse").innerText=todaySM.toFixed(2)+" SM³";
+  document.getElementById("todayCost").innerText=todayM.toFixed(2)+" M³";
+  document.getElementById("totalData").innerText=data.length+" data";
+  document.getElementById("totalDataTop").innerText=data.length+" data";
+  document.getElementById("todayDetail").innerText=todayM.toFixed(2)+" M³ = "+todaySM.toFixed(2)+" SM³";
+  document.getElementById("ringTotalSM").innerText="Total Pemakaian : "+totalSM.toFixed(2)+" SM³";
+  document.getElementById("ringTotalM").innerText="Total Volume M³ : "+totalM.toFixed(2)+" M³";
+  document.getElementById("ringTotalRp").innerText="Total Biaya : Rp "+Math.round(totalCost).toLocaleString();
+  drawLine();
+}
+
+// === MODIF TAMBAHAN EDIT LOGIC ===
+window.addData=async function(){
+  var nama=document.getElementById("nama").value.trim();
+  var tgl=document.getElementById("tgl").value.trim();
+  var awal=parseFloat(document.getElementById("awal").value);
+  var akhir=parseFloat(document.getElementById("akhir").value);
+  var harga=parseFloat(document.getElementById("harga").value)||12000;
+  if(nama===""){alert("Isi Nama");return;}
+  if(isNaN(awal)||isNaN(akhir)){alert("Isi Awal Akhir");return}
+  if(akhir<=awal){alert("Akhir > Awal");return}
+  var vol=+(akhir-awal).toFixed(2);
+  var factor=getFactor();
+  var sm3=+(vol*factor).toFixed(2);
+  var totalRp=sm3*harga;
+  var seri=document.getElementById("seriMeter").value;
+  
+  var objBaru = {tgl:tgl,nama:nama,awal:awal,akhir:akhir,pakai:vol,sm3:sm3,factor:factor,harga:harga,totalRp:totalRp,seri:seri,foto:fotoBase64 || (editIndex!==null ? data[editIndex].foto : "")};
+  
+  if(editIndex !== null){
+    // MODE UPDATE
+    data[editIndex] = objBaru;
+    editIndex = null;
+  } else {
+    // MODE TAMBAH BARU
+    data.push(objBaru);
+  }
+  
+  localStorage.setItem("cngLastNama",nama);
+  render();
+  await saveCloud();
+  batalEdit();
+}
 
 window.exportExcel=function(){var ws_data=[["PERHITUNGAN METERING - CNG Kp.Bulu"],["Seri Meter: "+document.getElementById("seriMeter").value+" | Tekanan: "+document.getElementById("pTek").value+" Bar | Correction Factor: "+getFactor()+" | Basis Volume: SM³"],[],["NO","TANGGAL","METER AWAL","METER AKHIR","VOLUME M³","CORRECTION","TOTAL SM³","HARGA","TOTAL HARGA","KETERANGAN"]];for(var i=0;i<data.length;i++){ws_data.push([i+1,data[i].tgl,data[i].awal,data[i].akhir,data[i].pakai.toFixed(2),data[i].factor,data[i].sm3.toFixed(2),data[i].harga,data[i].totalRp,data[i].nama]);}var totalSM=data.reduce((a,b)=>a+b.sm3,0);var totalRp=data.reduce((a,b)=>a+b.totalRp,0);ws_data.push([]);ws_data.push(["RINGKASAN PEMAKAIAN"]);ws_data.push(["Total Pemakaian",totalSM.toFixed(2)+" SM³"]);ws_data.push(["Total Biaya","Rp "+Math.round(totalRp).toLocaleString()]);var ws=XLSX.utils.aoa_to_sheet(ws_data);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"BAST");XLSX.writeFile(wb,"BAST_CNG_HARGA_"+getRealtimeDate()+".xlsx");}
 window.exportPDF=function(){
@@ -160,6 +221,58 @@ window.exportPDF=function(){
   }catch(err){ alert("PDF Error: "+err.message); }
 }
 window.askDeleteAll=async function(){if(confirm("Hapus "+data.length+" data di SEMUA LAPTOP?")){data=[];render();await saveCloud();}}
+
+// === 3 FUNGSI BARU EDIT HAPUS PER DATA (TIDAK MENGUBAH YANG LAIN) ===
+window.editData = function(i){
+  editIndex = i;
+  let d = data[i];
+  document.getElementById("nama").value = d.nama;
+  document.getElementById("tgl").value = d.tgl;
+  document.getElementById("awal").value = d.awal;
+  document.getElementById("akhir").value = d.akhir;
+  document.getElementById("harga").value = d.harga;
+  document.getElementById("cFactor").value = d.factor;
+  document.getElementById("seriMeter").value = d.seri || "LANDIS+GYR 750HP HP37449";
+  if(d.foto){
+    document.getElementById("preview").src = d.foto;
+    document.getElementById("preview").style.display = "block";
+    fotoBase64 = d.foto;
+  }
+  calcLive();
+  let btn = document.getElementById("btnSimpanUtama");
+  btn.innerText = "✏️ UPDATE DATA "+d.nama+" 🚀";
+  btn.style.background = "#fbbf24";
+  document.getElementById("btnBatalEdit").style.display = "block";
+  document.getElementById("labelEdit").style.display = "block";
+  document.getElementById("labelEdit").innerText = "MODE EDIT: "+d.nama+" - "+d.sm3.toFixed(2)+" SM³ (Baris "+(i+1)+")";
+  document.getElementById("cardForm").classList.add("mode-edit");
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+window.hapusPerData = async function(i){
+  let d = data[i];
+  if(confirm("Yakin hapus data "+d.nama+" "+d.sm3.toFixed(2)+" SM³ tanggal "+d.tgl+" ?")){
+    data.splice(i,1);
+    render();
+    await saveCloud();
+  }
+}
+
+window.batalEdit = function(){
+  editIndex = null;
+  fotoBase64 = "";
+  document.getElementById("btnSimpanUtama").innerText = "+ SIMPAN DATA 🚀";
+  document.getElementById("btnSimpanUtama").style.background = "#22c55e";
+  document.getElementById("btnBatalEdit").style.display = "none";
+  document.getElementById("labelEdit").style.display = "none";
+  document.getElementById("cardForm").classList.remove("mode-edit");
+  document.getElementById("nama").value = localStorage.getItem("cngLastNama")||"";
+  document.getElementById("awal").value = "";
+  document.getElementById("akhir").value = "";
+  document.getElementById("foto").value = "";
+  document.getElementById("preview").style.display = "none";
+  document.getElementById("liveConvert").style.display = "none";
+}
 
 // START
 loadCloudFirebase();
