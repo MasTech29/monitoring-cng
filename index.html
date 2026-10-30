@@ -196,7 +196,7 @@ window.addData=async function(){
 }
 
 window.exportExcel=function(){var ws_data=[["PERHITUNGAN METERING - CNG Kp.Bulu"],["Seri Meter: "+document.getElementById("seriMeter").value+" | Tekanan: "+document.getElementById("pTek").value+" Bar | Correction Factor: "+getFactor()+" | Basis Volume: SM³"],[],["NO","TANGGAL","METER AWAL","METER AKHIR","VOLUME M³","CORRECTION","TOTAL SM³","HARGA","TOTAL HARGA","KETERANGAN"]];for(var i=0;i<data.length;i++){ws_data.push([i+1,data[i].tgl,data[i].awal,data[i].akhir,data[i].pakai.toFixed(2),data[i].factor,data[i].sm3.toFixed(2),data[i].harga,data[i].totalRp,data[i].nama]);}var totalSM=data.reduce((a,b)=>a+b.sm3,0);var totalRp=data.reduce((a,b)=>a+b.totalRp,0);ws_data.push([]);ws_data.push(["RINGKASAN PEMAKAIAN"]);ws_data.push(["Total Pemakaian",totalSM.toFixed(2)+" SM³"]);ws_data.push(["Total Biaya","Rp "+Math.round(totalRp).toLocaleString()]);var ws=XLSX.utils.aoa_to_sheet(ws_data);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"BAST");XLSX.writeFile(wb,"BAST_CNG_HARGA_"+getRealtimeDate()+".xlsx");}
-window.exportPDF=function(){
+window.exportPDF = async function(){
   try{
     var {jsPDF}=window.jspdf;
     var doc=new jsPDF('l','mm','a4');
@@ -212,15 +212,44 @@ window.exportPDF=function(){
       var imgData=temp.toDataURL("image/jpeg",0.6);
       doc.addImage(imgData,'JPEG',14,18,270,35); startY=56;
     }catch(e){ startY=22; }
-    var body=[]; for(var i=0;i<data.length;i++){ body.push([i+1,data[i].tgl,data[i].awal,data[i].akhir,data[i].pakai.toFixed(2),data[i].factor.toFixed(4),data[i].sm3.toFixed(2)+" SM³","Rp "+data[i].harga.toLocaleString(),"Rp "+Math.round(data[i].totalRp).toLocaleString(),data[i].nama]); }
-    if(body.length==0){ alert("Belum ada data"); return; }
-    doc.autoTable({ head:[['NO','TANGGAL','METER AWAL','METER AKHIR','VOLUME','CORRECTION','TOTAL SM³','HARGA','TOTAL HARGA','KET']], body:body, startY:startY, styles:{fontSize:7}, headStyles:{fillColor:[185,28,28]} });
-    var y=doc.lastAutoTable.finalY+8; var totalSM=data.reduce((a,b)=>a+b.sm3,0); var totalRp=data.reduce((a,b)=>a+b.totalRp,0); var totalVol=data.reduce((a,b)=>a+b.pakai,0);
-    doc.setFont(undefined,'bold'); doc.text("RINGKASAN PEMAKAIAN",14,y); doc.setFont(undefined,'normal'); doc.text("Total: "+totalSM.toFixed(2)+" SM³ | Vol: "+totalVol.toFixed(2)+" M³ | Biaya: Rp "+Math.round(totalRp).toLocaleString(),14,y+6);
-    doc.save("BAST_CNG_HARGA_"+getRealtimeDate()+".pdf");
+    if(data.length==0){ alert("Belum ada data"); return; }
+
+    var body=[];
+    var fotoArr=[];
+    for(var i=0;i<data.length;i++){
+      var d=data[i];
+      fotoArr.push(d.foto || null);
+      body.push([ i+1, d.tgl, d.awal, d.akhir, d.pakai.toFixed(2), d.factor.toFixed(4), d.sm3.toFixed(2)+" SM³", "Rp "+d.harga.toLocaleString(), "Rp "+Math.round(d.totalRp).toLocaleString(), d.nama, "" ]);
+    }
+
+    doc.autoTable({
+      head:[['NO','TANGGAL','METER AWAL','METER AKHIR','VOLUME','CORRECTION','TOTAL SM³','HARGA','TOTAL HARGA','KET','FOTO METERAN']],
+      body: body,
+      startY: startY,
+      styles:{fontSize:7, minCellHeight:18, valign:'middle'},
+      headStyles:{fillColor:[185,28,28]},
+      columnStyles:{ 10:{cellWidth:32} },
+      didDrawCell: function(dataCell) {
+        if(dataCell.section==='body' && dataCell.column.index===10){
+          var f = fotoArr[dataCell.row.index];
+          if(f){
+            try{
+              var t = f.indexOf('data:image/png')===0 ? 'PNG' : 'JPEG';
+              doc.addImage(f, t, dataCell.cell.x+2, dataCell.cell.y+1, 28, 15);
+            }catch(err){}
+          }
+        }
+      }
+    });
+
+    var y=doc.lastAutoTable.finalY+8; 
+    var totalSM=data.reduce((a,b)=>a+b.sm3,0); 
+    var totalRp=data.reduce((a,b)=>a+b.totalRp,0); 
+    doc.setFont(undefined,'bold'); doc.text("RINGKASAN: "+totalSM.toFixed(2)+" SM³ | Rp "+Math.round(totalRp).toLocaleString(),14,y);
+    doc.save("BAST_CNG_KpBulu_"+getRealtimeDate()+"_DENGAN_FOTO.pdf");
   }catch(err){ alert("PDF Error: "+err.message); }
 }
-window.askDeleteAll=async function(){if(confirm("Hapus "+data.length+" data di SEMUA LAPTOP?")){data=[];render();await saveCloud();}}
+  window.askDeleteAll=async function(){if(confirm("Hapus "+data.length+" data di SEMUA LAPTOP?")){data=[];render();await saveCloud();}}
 
 // === 3 FUNGSI BARU EDIT HAPUS PER DATA (TIDAK MENGUBAH YANG LAIN) ===
 window.editData = function(i){
