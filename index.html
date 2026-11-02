@@ -63,7 +63,7 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <div class="card" style="background:#0f172a;border:1px solid #334155"><b style="font-size:12px">RINGKASAN PEMAKAIAN</b><div class="stat" id="ringTotalSM">Total Pemakaian : 0 SM³</div><div class="stat" id="ringTotalM">Total Volume M³ : 0 M³</div><div class="stat" id="ringTotalRp" style="color:#22c55e;font-weight:bold;font-size:13px">Total Biaya : Rp 0</div></div>
 
 <div class="card" style="border:2px solid #22c55e;background:#0f172a">
-<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN + GRAFIK + PDF (ANTI HILANG)</b>
+<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN</b>
 <div class="row" style="margin-top:10px">
 <select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e"><option value="all">Semua Bulan</option></select>
 <button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:100px">📊 Excel</button>
@@ -216,7 +216,6 @@ window.editData = function(i){ editIndex = i; let d = data[i]; document.getEleme
 window.hapusPerData = async function(i){ let d = data[i]; if(confirm("Yakin hapus data "+d.nama+" "+d.sm3.toFixed(2)+" SM³ tanggal "+d.tgl+" ?")){ data.splice(i,1); render(); await saveCloud(); } }
 window.batalEdit = function(){ editIndex = null; fotoBase64 = ""; document.getElementById("btnSimpanUtama").innerText = "+ SIMPAN DATA 🚀"; document.getElementById("btnSimpanUtama").style.background = "#22c55e"; document.getElementById("btnBatalEdit").style.display = "none"; document.getElementById("labelEdit").style.display = "none"; document.getElementById("cardForm").classList.remove("mode-edit"); document.getElementById("nama").value = localStorage.getItem("cngLastNama")||""; document.getElementById("awal").value = ""; document.getElementById("akhir").value = ""; document.getElementById("foto").value = ""; document.getElementById("preview").style.display = "none"; document.getElementById("liveConvert").style.display = "none"; }
 
-// ====== TAMBAHAN BARU 4 - RENDER BULANAN DARI ARSIP + AKTIF ======
 window.renderBulanan = function(){
   const sel = document.getElementById('filterBulan');
   let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
