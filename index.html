@@ -82,16 +82,22 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <div class="stat">Firebase: cng-kpbulu-default-rtdb.firebaseio.com | Tekanan 200 Bar | Status: LIVE SYNC AKTIF</div>
 </div>
 
-<!-- ====== TAMBAHAN BARU - RIWAYAT BULANAN - TANPA UBAH CODE LAMA ====== -->
+<!-- ====== RIWAYAT BULANAN + PDF + GRAFIK BULAN LALU (TAMBAHAN BARU) ====== -->
 <div class="card" style="border:2px solid #22c55e;background:#0f172a">
-<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN - AUTO GROUP BY BULAN</b>
+<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN + GRAFIK + PDF BULAN LALU</b>
 <div class="row" style="margin-top:10px">
 <select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e">
 <option value="all">Semua Bulan</option>
 </select>
-<button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:140px;background:#22c55e;color:#000">📊 Excel Bulan</button>
+<button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:100px">📊 Excel</button>
+<button onclick="exportPdfBulanan()" class="btn-pdf" style="max-width:100px;background:#f59e0b">📄 PDF</button>
 </div>
 <div class="stat" id="ringBulanan" style="margin-top:10px;color:#fbbf24">Belum ada data bulanan</div>
+<!-- GRAFIK BULAN LALU BARU -->
+<div style="background:#1e293b;border-radius:12px;padding:8px;margin-top:10px">
+<canvas id="chartBulanan" height="280"></canvas>
+<div class="stat" id="labelChartBulanan" style="text-align:center;margin-top:4px">Grafik Harian Bulan Lalu</div>
+</div>
 <div style="overflow:auto"><table id="tabelRekapBulanan" style="min-width:600px"></table></div>
 <div style="overflow:auto;margin-top:12px"><table id="tabelBulanan" style="min-width:600px"></table></div>
 </div>
@@ -162,7 +168,6 @@ function render(){
   document.getElementById("ringTotalM").innerText="Total Volume M³ : "+totalM.toFixed(2)+" M³";
   document.getElementById("ringTotalRp").innerText="Total Biaya : Rp "+Math.round(totalCost).toLocaleString();
   drawLine();
-  // TAMBAHAN 1 BARIS UNTUK RIWAYAT BULANAN - TIDAK UBAH LOGIC LAMA
   if(typeof renderBulanan === 'function') renderBulanan();
 }
 window.addData=async function(){
@@ -208,7 +213,6 @@ window.editData = function(i){
 window.hapusPerData = async function(i){ let d = data[i]; if(confirm("Yakin hapus data "+d.nama+" "+d.sm3.toFixed(2)+" SM³ tanggal "+d.tgl+" ?")){ data.splice(i,1); render(); await saveCloud(); } }
 window.batalEdit = function(){ editIndex = null; fotoBase64 = ""; document.getElementById("btnSimpanUtama").innerText = "+ SIMPAN DATA 🚀"; document.getElementById("btnSimpanUtama").style.background = "#22c55e"; document.getElementById("btnBatalEdit").style.display = "none"; document.getElementById("labelEdit").style.display = "none"; document.getElementById("cardForm").classList.remove("mode-edit"); document.getElementById("nama").value = localStorage.getItem("cngLastNama")||""; document.getElementById("awal").value = ""; document.getElementById("akhir").value = ""; document.getElementById("foto").value = ""; document.getElementById("preview").style.display = "none"; document.getElementById("liveConvert").style.display = "none"; }
 
-// ====== 2 FUNGSI BARU - RIWAYAT BULANAN - TIDAK MENYENTUH CODE LAMA ======
 window.renderBulanan = function(){
   const sel = document.getElementById('filterBulan');
   if(!sel || !data.length) return;
@@ -233,7 +237,6 @@ window.renderBulanan = function(){
   }
   htmlRekap+=`<tr style="background:#14532d"><td><b>GRAND TOTAL</b></td><td><b>${data.length}</b></td><td><b>${grandM.toFixed(2)}</b></td><td><b>${grandSM.toFixed(2)} SM³</b></td><td><b>Rp ${Math.round(grandRp).toLocaleString()}</b></td></tr>`;
   document.getElementById('tabelRekapBulanan').innerHTML=htmlRekap;
-  
   let dataFilter = bulanTerpilih==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulanTerpilih);
   let totalFilterSM = dataFilter.reduce((s,d)=>s+d.sm3,0);
   let totalFilterRp = dataFilter.reduce((s,d)=>s+d.totalRp,0);
@@ -243,7 +246,15 @@ window.renderBulanan = function(){
     htmlDetail+=`<tr><td>${d.tgl}</td><td>${d.awal} → ${d.akhir}</td><td>${d.pakai.toFixed(2)}</td><td style="color:#22c55e">${d.sm3.toFixed(2)}</td><td>Rp ${Math.round(d.totalRp).toLocaleString()}</td><td>${d.nama}</td></tr>`;
   });
   document.getElementById('tabelBulanan').innerHTML=htmlDetail;
+  renderChartBulanan(dataFilter, bulanTerpilih);
+  if(sel && !sel.dataset.auto){
+    let d=new Date(); d.setMonth(d.getMonth()-1);
+    let ym=d.toISOString().slice(0,7);
+    for(let o of sel.options){ if(o.value===ym){ sel.value=ym; sel.dataset.auto='1'; let df=data.filter(x=>x.tgl.slice(0,7)===ym); renderBulanan(); renderChartBulanan(df, ym); break; } }
+    sel.dataset.auto='1';
+  }
 }
+
 window.exportExcelBulanan = function(){
   const bulan = document.getElementById('filterBulan').value;
   let dataF = bulan==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulan);
@@ -253,6 +264,63 @@ window.exportExcelBulanan = function(){
   ws_data.push([]); ws_data.push(["TOTAL", "", "", "", totalSM.toFixed(2)+" SM³", "Rp "+Math.round(totalRp).toLocaleString()]);
   var ws=XLSX.utils.aoa_to_sheet(ws_data); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Bulanan"); XLSX.writeFile(wb,"CNG_BULANAN_"+bulan+".xlsx");
 }
+
+// ====== TAMBAHAN BARU 2 FUNGSI GRAFIK + PDF BULAN LALU (TIDAK UBAH CODE LAMA) ======
+window.renderChartBulanan = function(dataFilter, bulanLabel){
+  const c=document.getElementById('chartBulanan'); if(!c) return;
+  const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||2;
+  const W=c.width=c.offsetWidth*dpr; const H=c.height=280*dpr;
+  ctx.clearRect(0,0,W,H);
+  if(!dataFilter.length){
+    ctx.fillStyle="#475569"; ctx.font=(18*dpr)+"px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("Belum ada data "+(bulanLabel||""),W/2,H/2); return;
+  }
+  let map={}; dataFilter.forEach(d=>{ map[d.tgl]=(map[d.tgl]||0)+d.sm3; });
+  let labels=Object.keys(map).sort(); let vals=labels.map(k=>map[k]);
+  let max=Math.max(...vals)*1.4; if(max<50) max=50;
+  let leftPad=65*dpr,rightPad=15*dpr,topPad=30*dpr,bottomPad=40*dpr;
+  let chartW=W-leftPad-rightPad, chartH=H-topPad-bottomPad;
+  ctx.strokeStyle="#334155"; ctx.fillStyle="#64748b"; ctx.font=(11*dpr)+"px sans-serif"; ctx.textAlign="right";
+  for(let i=0;i<=4;i++){ let y=topPad+i*chartH/4; ctx.beginPath(); ctx.moveTo(leftPad,y); ctx.lineTo(W-rightPad,y); ctx.stroke(); ctx.fillText(Math.round(max-i*max/4)+" SM³",leftPad-8*dpr,y+4*dpr); }
+  let barW=chartW/labels.length*0.6;
+  labels.forEach((lb,idx)=>{
+    let x=leftPad+idx*chartW/labels.length+(chartW/labels.length-barW)/2;
+    let h=(vals[idx]/max)*chartH; let y=topPad+chartH-h;
+    ctx.fillStyle="#22c55e"; ctx.fillRect(x,y,barW,h);
+    ctx.fillStyle="white"; ctx.font="bold "+(10*dpr)+"px sans-serif"; ctx.textAlign="center";
+    if(vals[idx]>0) ctx.fillText(vals[idx].toFixed(0),x+barW/2,y-8*dpr);
+    ctx.fillStyle="#94a3b8"; ctx.font=(9*dpr)+"px sans-serif";
+    ctx.fillText(lb.slice(8,10),x+barW/2,topPad+chartH+18*dpr);
+  });
+  document.getElementById('labelChartBulanan').innerText=`Grafik Harian ${bulanLabel} - Total ${vals.reduce((a,b)=>a+b,0).toFixed(1)} SM³`;
+}
+
+window.exportPdfBulanan = function(){
+  try{
+    const bulan=document.getElementById('filterBulan').value;
+    let dataF=bulan==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulan);
+    if(!dataF.length){alert("Pilih bulan dulu bro");return;}
+    const {jsPDF}=window.jspdf; const doc=new jsPDF('l','mm','a4');
+    doc.setFontSize(12); doc.setFont(undefined,'bold');
+    doc.text(`LAPORAN BULANAN CNG Kp.Bulu - ${bulan}`,14,10);
+    let totalSM=dataF.reduce((a,b)=>a+b.sm3,0); let totalRp=dataF.reduce((a,b)=>a+b.totalRp,0);
+    doc.setFontSize(9); doc.setFont(undefined,'normal');
+    doc.text(`Total: ${dataF.length} data | ${totalSM.toFixed(2)} SM³ | Rp ${Math.round(totalRp).toLocaleString()} | Cetak: ${getRealtimeDate()}`,14,16);
+    try{
+      let c=document.getElementById('chartBulanan');
+      let img=c.toDataURL('image/jpeg',0.8);
+      doc.addImage(img,'JPEG',14,20,270,50);
+    }catch(e){}
+    let body=[];
+    dataF.forEach((d,i)=>{ body.push([i+1,d.tgl,d.awal,d.akhir,d.pakai.toFixed(2),d.sm3.toFixed(2)+" SM³","Rp "+Math.round(d.totalRp).toLocaleString(),d.nama]); });
+    doc.autoTable({
+      head:[['NO','TANGGAL','AWAL','AKHIR','M³','SM³','BIAYA','PETUGAS']],
+      body:body, startY:76, styles:{fontSize:8}, headStyles:{fillColor:[34,197,94]}
+    });
+    doc.save(`CNG_BULANAN_${bulan}_DENGAN_GRAFIK.pdf`);
+  }catch(err){ alert("PDF Error: "+err.message); }
+}
+
 loadCloudFirebase();
 </script>
 </body>
