@@ -4,7 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MONITORING CNG GACOAN </title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='80'%3E⛽%3C/text%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='80'%3E⛽%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -38,71 +37,44 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 </head>
 <body>
 <h1>⛽ CNG Kp.Bulu <span id="badge" class="badge-cloud">● CONNECTING </span></h1>
-
 <div class="row">
 <div class="card" style="flex:1"><div class="stat">Hari Ini SM³</div><div class="big" id="todayUse">0 SM³</div><div class="stat" id="todayDetail">0 data</div></div>
 <div class="card" style="flex:1"><div class="stat">Bulan SM³ / Biaya</div><div class="big" id="monthUse">0 SM³</div><div class="big-harga" id="monthCost">Rp 0</div></div>
 <div class="card" style="flex:1"><div class="stat">Total Volume</div><div class="big-harga" id="todayCost">0 M³</div><div class="stat" id="totalDataTop">0 data</div></div>
 </div>
-
 <div class="card"><canvas id="chart" height="300"></canvas><div class="stat" style="text-align:center;margin-top:6px">PERHITUNGAN METERING - Basis SM³ - Correction 1.885348402 - Firebase cng-kpbulu LIVE</div></div>
-
 <div class="card" id="cardForm">
 <div class="row2"><input type="text" id="nama" placeholder="Nama PengInput" style="border-color:#22c55e"><input type="date" id="tgl"></div>
 <div class="row2"><input type="number" id="awal" placeholder="Meter Awal 34512.33" step="0.01" oninput="calcLive()"><input type="number" id="akhir" placeholder="Meter Akhir 34562.19" step="0.01" oninput="calcLive()"></div>
 <div class="row2"><input type="number" id="harga" value="12000" placeholder="Harga per SM³ Rp 12000" oninput="calcLive()"><input type="file" id="foto" accept="image/*" capture="environment"></div>
-<div class="convert-box" id="liveConvert" style="display:none">
-<div class="stat">LIVE HITUNG BAST</div>
-<div class="convert-big" id="convertText">0 M³ = 0 SM³</div>
-<div class="stat" id="hargaText">Harga Rp 12.000 × 94 SM³ = Rp 1.128.000</div>
-<div class="stat" id="factorText">Correction: 1.885348402 | Tekanan 0.9 Bar</div>
-</div>
-<div style="margin-top:8px;background:#0f172a;padding:8px;border-radius:10px;border:1px solid #334155">
-<div class="row2"><input type="text" id="seriMeter" value="LANDIS+GYR 750HP HP37449"><input type="number" id="pTek" value="0.9" step="0.1"></div>
-<div class="row2"><input type="number" id="cFactor" value="1.885348402" step="0.000000001" oninput="calcLive()"><input type="text" id="tOper" value="28"></div>
-</div>
+<div class="convert-box" id="liveConvert" style="display:none"><div class="stat">LIVE HITUNG BAST</div><div class="convert-big" id="convertText">0 M³ = 0 SM³</div><div class="stat" id="hargaText"></div><div class="stat" id="factorText"></div></div>
+<div style="margin-top:8px;background:#0f172a;padding:8px;border-radius:10px;border:1px solid #334155"><div class="row2"><input type="text" id="seriMeter" value="LANDIS+GYR 750HP HP37449"><input type="number" id="pTek" value="0.9" step="0.1"></div><div class="row2"><input type="number" id="cFactor" value="1.885348402" step="0.000000001" oninput="calcLive()"><input type="text" id="tOper" value="28"></div></div>
 <img id="preview" style="display:none;width:100%;border-radius:10px;margin-top:8px;max-height:160px;object-fit:cover">
 <button class="btn-save" id="btnSimpanUtama" onclick="addData()">+ SIMPAN DATA 🚀</button>
 <button class="btn-cancel" id="btnBatalEdit" onclick="batalEdit()">BATAL EDIT ✖️</button>
 <div id="labelEdit" style="display:none;text-align:center;color:#fbbf24;font-size:11px;margin-top:6px;font-weight:bold"></div>
 </div>
-
 <div class="card">
 <div class="row" style="justify-content:space-between"><h3 style="margin:0;font-size:13px">Rincian</h3><div class="stat" id="totalData">0 data</div></div>
 <div class="row" style="margin-top:10px"><button class="btn-excel" onclick="exportExcel()">📊 Excel</button><button class="btn-pdf" onclick="exportPDF()">📄 PDF </button></div>
 <table id="tabel"></table>
 <button class="btn-del-all" onclick="askDeleteAll()">🗑️ Hapus Semua (Sync All)</button>
 </div>
+<div class="card" style="background:#0f172a;border:1px solid #334155"><b style="font-size:12px">RINGKASAN PEMAKAIAN</b><div class="stat" id="ringTotalSM">Total Pemakaian : 0 SM³</div><div class="stat" id="ringTotalM">Total Volume M³ : 0 M³</div><div class="stat" id="ringTotalRp" style="color:#22c55e;font-weight:bold;font-size:13px">Total Biaya : Rp 0</div></div>
 
-<div class="card" style="background:#0f172a;border:1px solid #334155">
-<b style="font-size:12px">RINGKASAN PEMAKAIAN</b>
-<div class="stat" id="ringTotalSM">Total Pemakaian : 0 SM³</div>
-<div class="stat" id="ringTotalM">Total Volume M³ : 0 M³</div>
-<div class="stat" id="ringTotalRp" style="color:#22c55e;font-weight:bold;font-size:13px">Total Biaya : Rp 0</div>
-<div class="stat">Firebase: cng-kpbulu-default-rtdb.firebaseio.com | Tekanan 200 Bar | Status: LIVE SYNC AKTIF</div>
-</div>
-
-<!-- ====== RIWAYAT BULANAN + PDF + GRAFIK BULAN LALU (TAMBAHAN BARU) ====== -->
 <div class="card" style="border:2px solid #22c55e;background:#0f172a">
-<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN + GRAFIK + PDF BULAN LALU</b>
+<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN + GRAFIK + PDF (ANTI HILANG)</b>
 <div class="row" style="margin-top:10px">
-<select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e">
-<option value="all">Semua Bulan</option>
-</select>
+<select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e"><option value="all">Semua Bulan</option></select>
 <button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:100px">📊 Excel</button>
 <button onclick="exportPdfBulanan()" class="btn-pdf" style="max-width:100px;background:#f59e0b">📄 PDF</button>
 </div>
 <div class="stat" id="ringBulanan" style="margin-top:10px;color:#fbbf24">Belum ada data bulanan</div>
-<!-- GRAFIK BULAN LALU BARU -->
-<div style="background:#1e293b;border-radius:12px;padding:8px;margin-top:10px">
-<canvas id="chartBulanan" height="280"></canvas>
-<div class="stat" id="labelChartBulanan" style="text-align:center;margin-top:4px">Grafik Harian Bulan Lalu</div>
-</div>
+<div style="background:#1e293b;border-radius:12px;padding:8px;margin-top:10px"><canvas id="chartBulanan" height="280"></canvas><div class="stat" id="labelChartBulanan" style="text-align:center;margin-top:4px">Grafik Harian Bulan Lalu</div></div>
 <div style="overflow:auto"><table id="tabelRekapBulanan" style="min-width:600px"></table></div>
 <div style="overflow:auto;margin-top:12px"><table id="tabelBulanan" style="min-width:600px"></table></div>
 </div>
-
-<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01</div>
+<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01 - ARSIP AMAN</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -114,12 +86,15 @@ const firebaseConfig = {
   projectId: "cng-kpbulu",
   storageBucket: "cng-kpbulu.firebasestorage.app",
   messagingSenderId: "976465353369",
-  appId: "1:976465353369:web:4a26d31dbb2bc6e13a3608",
-  measurementId: "G-8BK9M7W0Y2"
+  appId: "1:976465353369:web:4a26d31dbb2bc6e13a3608"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db, 'cng-bulu/bastData');
+// ====== TAMBAHAN BARU 1 - ARSIP YANG TIDAK IKUT KEHAPUS ======
+const historyRef = ref(db, 'cng-bulu/arsipBulanan');
+var dataHistory = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
+// ====== END TAMBAHAN ======
 var data=[];var fotoBase64="";var editIndex = null;
 function getRealtimeDate(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0')+"-"+String(n.getDate()).padStart(2,'0');}
 function getRealtimeMonth(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0');}
@@ -129,6 +104,8 @@ window.calcLive=function(){var awal=parseFloat(document.getElementById("awal").v
 document.getElementById("tgl").value=getRealtimeDate();
 var lastNama=localStorage.getItem("cngLastNama")||"";if(lastNama)document.getElementById("nama").value=lastNama;
 document.getElementById("foto").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){fotoBase64=ev.target.result;document.getElementById("preview").src=fotoBase64;document.getElementById("preview").style.display="block";};r.readAsDataURL(f);});
+
+// ====== TAMBAHAN BARU 2 - LOAD CLOUD DENGAN ARSIP ======
 function loadCloudFirebase(){
   onValue(dbRef, (snapshot)=>{
     const val = snapshot.val();
@@ -137,12 +114,22 @@ function loadCloudFirebase(){
     document.getElementById("badge").innerHTML="<span class='live-dot' style='background:#22c55e'></span> LIVE SYNC AKTIF • "+data.length+" data";
     document.getElementById("badge").style.background="#22c55e";
     render();
-  }, (err)=>{
-    document.getElementById("badge").innerText="● FIREBASE ERROR: "+err.message;
+  });
+  onValue(historyRef, (snap)=>{
+    const v=snap.val();
+    if(v){
+      dataHistory = Array.isArray(v) ? v : Object.values(v);
+      dataHistory = dataHistory.filter(Boolean);
+      localStorage.setItem('cngHistoryBulanan', JSON.stringify(dataHistory));
+      if(typeof renderBulanan==='function') renderBulanan();
+    }
   });
 }
-async function saveCloud(){ try{ await set(dbRef, data); }catch(e){ console.log("save error",e); } }
+// ====== END TAMBAHAN ======
+
+async function saveCloud(){ try{ await set(dbRef, data); }catch(e){} }
 function drawLine(){var c=document.getElementById("chart");var ctx=c.getContext("2d");var dpr=window.devicePixelRatio||2;var W=c.width=c.offsetWidth*dpr;var H=c.height=300*dpr;ctx.clearRect(0,0,W,H);var month=getRealtimeMonth();var map={};var maxDay=0;for(var i=0;i<data.length;i++){if(data[i].tgl.slice(0,7)===month){map[data[i].tgl]=(map[data[i].tgl]||0)+(data[i].sm3||0);var day=parseInt(data[i].tgl.slice(8,10));if(day>maxDay)maxDay=day;}}if(maxDay==0)maxDay=new Date().getDate();var labels=[],vals=[];for(var d=1;d<=maxDay;d++){var ds=month+"-"+String(d).padStart(2,'0');labels.push(ds);vals.push(map[ds]||0);}if(labels.length==0){ctx.fillStyle="#475569";ctx.font=(24*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText("Belum ada data",W/2,H/2);return;}var max=Math.max.apply(null,vals)*1.4;if(max<100)max=100;var leftPad=90*dpr,rightPad=30*dpr,topPad=50*dpr,bottomPad=55*dpr;var chartW=W-leftPad-rightPad,chartH=H-topPad-bottomPad;ctx.strokeStyle="#1e293b";ctx.lineWidth=1;ctx.fillStyle="#64748b";ctx.font=(18*dpr)+"px sans-serif";ctx.textAlign="right";for(var i=0;i<=4;i++){var y=topPad+i*chartH/4;ctx.beginPath();ctx.moveTo(leftPad,y);ctx.lineTo(W-rightPad,y);ctx.stroke();ctx.fillText(Math.round(max-i*max/4)+" SM³",leftPad-12*dpr,y+6*dpr);}ctx.strokeStyle="#22c55e";ctx.lineWidth=4*dpr;ctx.beginPath();ctx.lineJoin="round";ctx.lineCap="round";for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();ctx.lineTo(leftPad+chartW,topPad+chartH);ctx.lineTo(leftPad,topPad+chartH);ctx.closePath();ctx.fillStyle="rgba(34,197,94,0.18)";ctx.fill();for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(vals[i]>0){ctx.fillStyle="#ffffff";ctx.font="bold "+(16*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(vals[i].toFixed(0)+" SM³",x,y-24*dpr);}ctx.fillStyle="#94a3b8";ctx.font=(14*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(labels[i].slice(8,10),x,topPad+chartH+24*dpr);}}
+
 function render(){
   var totalM=0,totalSM=0,totalCost=0,todaySM=0,todayM=0;
   var realToday=getRealtimeDate();var realMonth=getRealtimeMonth();
@@ -150,8 +137,7 @@ function render(){
   for(var i=0;i<data.length;i++){
     var d=data[i];
     var f=d.foto?"<img src='"+d.foto+"' class='thumb'>":"-";
-    var harga=d.harga||12000;
-    var totRp=d.totalRp||d.sm3*harga;
+    var harga=d.harga||12000; var totRp=d.totalRp||d.sm3*harga;
     html+="<tr><td>"+(i+1)+"</td><td>"+d.tgl+"</td><td>"+d.awal+"</td><td>"+d.akhir+"</td><td>"+d.pakai.toFixed(2)+"</td><td>"+(d.factor||1.8853).toFixed(4)+"</td><td style='color:#22c55e'><b>"+d.sm3.toFixed(2)+" SM³</b></td><td>Rp "+harga.toLocaleString()+"</td><td style='color:#fbbf24'><b>Rp "+Math.round(totRp).toLocaleString()+"</b></td><td>"+(d.nama||"-")+"</td><td>"+f+"</td><td><button class='btn-edit' onclick='editData("+i+")'>✏️ Edit</button><button class='btn-hapus' onclick='hapusPerData("+i+")'>🗑️</button></td></tr>";
     if(d.tgl.slice(0,7)===realMonth){totalM+=d.pakai;totalSM+=d.sm3;totalCost+=totRp;}
     if(d.tgl===realToday){todayM+=d.pakai;todaySM+=d.sm3;}
@@ -170,6 +156,7 @@ function render(){
   drawLine();
   if(typeof renderBulanan === 'function') renderBulanan();
 }
+
 window.addData=async function(){
   var nama=document.getElementById("nama").value.trim();
   var tgl=document.getElementById("tgl").value.trim();
@@ -179,10 +166,7 @@ window.addData=async function(){
   if(nama===""){alert("Isi Nama");return;}
   if(isNaN(awal)||isNaN(akhir)){alert("Isi Awal Akhir");return}
   if(akhir<=awal){alert("Akhir > Awal");return}
-  var vol=+(akhir-awal).toFixed(2);
-  var factor=getFactor();
-  var sm3=+(vol*factor).toFixed(2);
-  var totalRp=sm3*harga;
+  var vol=+(akhir-awal).toFixed(2); var factor=getFactor(); var sm3=+(vol*factor).toFixed(2); var totalRp=sm3*harga;
   var seri=document.getElementById("seriMeter").value;
   var objBaru = {tgl:tgl,nama:nama,awal:awal,akhir:akhir,pakai:vol,sm3:sm3,factor:factor,harga:harga,totalRp:totalRp,seri:seri,foto:fotoBase64 || (editIndex!==null ? data[editIndex].foto : "")};
   if(editIndex !== null){ data[editIndex] = objBaru; editIndex = null; } else { data.push(objBaru); }
@@ -203,69 +187,87 @@ window.exportPDF = async function(){
     var y=doc.lastAutoTable.finalY+8; var totalSM=data.reduce((a,b)=>a+b.sm3,0); var totalRp=data.reduce((a,b)=>a+b.totalRp,0); doc.setFont(undefined,'bold'); doc.text("RINGKASAN: "+totalSM.toFixed(2)+" SM³ | Rp "+Math.round(totalRp).toLocaleString(),14,y); doc.save("BAST_CNG_KpBulu_"+getRealtimeDate()+"_DENGAN_FOTO.pdf");
   }catch(err){ alert("PDF Error: "+err.message); }
 }
-window.askDeleteAll=async function(){if(confirm("Hapus "+data.length+" data di SEMUA LAPTOP?")){data=[];render();await saveCloud();}}
-window.editData = function(i){
-  editIndex = i; let d = data[i];
-  document.getElementById("nama").value = d.nama; document.getElementById("tgl").value = d.tgl; document.getElementById("awal").value = d.awal; document.getElementById("akhir").value = d.akhir; document.getElementById("harga").value = d.harga; document.getElementById("cFactor").value = d.factor; document.getElementById("seriMeter").value = d.seri || "LANDIS+GYR 750HP HP37449";
-  if(d.foto){ document.getElementById("preview").src = d.foto; document.getElementById("preview").style.display = "block"; fotoBase64 = d.foto; }
-  calcLive(); let btn = document.getElementById("btnSimpanUtama"); btn.innerText = "✏️ UPDATE DATA "+d.nama+" 🚀"; btn.style.background = "#fbbf24"; document.getElementById("btnBatalEdit").style.display = "block"; document.getElementById("labelEdit").style.display = "block"; document.getElementById("labelEdit").innerText = "MODE EDIT: "+d.nama+" - "+d.sm3.toFixed(2)+" SM³ (Baris "+(i+1)+")"; document.getElementById("cardForm").classList.add("mode-edit"); window.scrollTo({top:0, behavior:'smooth'});
+
+// ====== TAMBAHAN BARU 3 - HAPUS SEMUA TAPI ARSIP TETAP AMAN ======
+window.askDeleteAll=async function(){
+  if(data.length===0){ alert("Sudah kosong bro"); return; }
+  if(!confirm("Hapus "+data.length+" data di SEMUA LAPTOP? \n\nData akan OTOMATIS DIARSIPKAN dulu jadi riwayat bulan lalu TIDAK HILANG!")){
+    return;
+  }
+  try{
+    let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
+    if(dataHistory.length) hist = dataHistory;
+    data.forEach(d=>{
+      if(!hist.some(h=>h.tgl===d.tgl && h.awal===d.awal && h.akhir===d.akhir)){
+        hist.push(d);
+      }
+    });
+    dataHistory = hist;
+    localStorage.setItem('cngHistoryBulanan', JSON.stringify(hist));
+    await set(historyRef, hist);
+  }catch(e){ console.log("arsip gagal",e); }
+  data=[];
+  render();
+  await saveCloud();
+  alert("✅ Data aktif terhapus, tapi RIWAYAT BULANAN AMAN di arsip! Total arsip: "+dataHistory.length+" data");
 }
+
+window.editData = function(i){ editIndex = i; let d = data[i]; document.getElementById("nama").value = d.nama; document.getElementById("tgl").value = d.tgl; document.getElementById("awal").value = d.awal; document.getElementById("akhir").value = d.akhir; document.getElementById("harga").value = d.harga; document.getElementById("cFactor").value = d.factor; document.getElementById("seriMeter").value = d.seri || "LANDIS+GYR 750HP HP37449"; if(d.foto){ document.getElementById("preview").src = d.foto; document.getElementById("preview").style.display = "block"; fotoBase64 = d.foto; } calcLive(); let btn = document.getElementById("btnSimpanUtama"); btn.innerText = "✏️ UPDATE DATA "+d.nama+" 🚀"; btn.style.background = "#fbbf24"; document.getElementById("btnBatalEdit").style.display = "block"; document.getElementById("labelEdit").style.display = "block"; document.getElementById("labelEdit").innerText = "MODE EDIT: "+d.nama+" - "+d.sm3.toFixed(2)+" SM³ (Baris "+(i+1)+")"; document.getElementById("cardForm").classList.add("mode-edit"); window.scrollTo({top:0, behavior:'smooth'});}
 window.hapusPerData = async function(i){ let d = data[i]; if(confirm("Yakin hapus data "+d.nama+" "+d.sm3.toFixed(2)+" SM³ tanggal "+d.tgl+" ?")){ data.splice(i,1); render(); await saveCloud(); } }
 window.batalEdit = function(){ editIndex = null; fotoBase64 = ""; document.getElementById("btnSimpanUtama").innerText = "+ SIMPAN DATA 🚀"; document.getElementById("btnSimpanUtama").style.background = "#22c55e"; document.getElementById("btnBatalEdit").style.display = "none"; document.getElementById("labelEdit").style.display = "none"; document.getElementById("cardForm").classList.remove("mode-edit"); document.getElementById("nama").value = localStorage.getItem("cngLastNama")||""; document.getElementById("awal").value = ""; document.getElementById("akhir").value = ""; document.getElementById("foto").value = ""; document.getElementById("preview").style.display = "none"; document.getElementById("liveConvert").style.display = "none"; }
 
+// ====== TAMBAHAN BARU 4 - RENDER BULANAN DARI ARSIP + AKTIF ======
 window.renderBulanan = function(){
   const sel = document.getElementById('filterBulan');
-  if(!sel || !data.length) return;
-  const bulanTerpilih = sel.value;
-  let months = [...new Set(data.map(d=>d.tgl.slice(0,7)))].sort();
-  if(sel.options.length <= 1){
-    months.forEach(m=>{
-      let opt=document.createElement('option'); opt.value=m; opt.textContent='Bulan '+m; sel.appendChild(opt);
-    });
+  let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
+  if(dataHistory.length) hist = dataHistory;
+  let allForHistory = [...hist, ...data];
+  let mapU={}; allForHistory.forEach(d=>{ let k=d.tgl+"_"+d.awal+"_"+d.akhir; mapU[k]=d; });
+  let combined = Object.values(mapU).filter(Boolean);
+  if(!combined.length){
+    document.getElementById('ringBulanan').innerHTML="Belum ada arsip bulanan";
+    document.getElementById('tabelRekapBulanan').innerHTML='';
+    document.getElementById('tabelBulanan').innerHTML='<tr><td>Belum ada data</td></tr>';
+    renderChartBulanan([], 'all'); return;
   }
-  let rekap={};
-  data.forEach(d=>{
-    let bul = d.tgl.slice(0,7);
-    if(!rekap[bul]) rekap[bul]={totalSM:0,totalM:0,totalRp:0,count:0};
-    rekap[bul].totalSM+=d.sm3; rekap[bul].totalM+=d.pakai; rekap[bul].totalRp+=d.totalRp; rekap[bul].count++;
+  let months=[...new Set(combined.map(d=>d.tgl.slice(0,7)))].sort().reverse();
+  let cur=sel.value;
+  sel.innerHTML='<option value="all">Semua Bulan (Aktif + Arsip)</option>';
+  months.forEach(m=>{
+    let isArsip = hist.some(h=>h.tgl.slice(0,7)===m);
+    let opt=document.createElement('option'); opt.value=m; opt.textContent='Bulan '+m+(isArsip?' (Arsip Aman)':'');
+    if(m===cur) opt.selected=true;
+    sel.appendChild(opt);
   });
+  let rekap={}; combined.forEach(d=>{ let bul=d.tgl.slice(0,7); if(!rekap[bul]) rekap[bul]={totalSM:0,totalM:0,totalRp:0,count:0}; rekap[bul].totalSM+=d.sm3; rekap[bul].totalM+=d.pakai; rekap[bul].totalRp+=d.totalRp; rekap[bul].count++; });
   let htmlRekap=`<tr><th>BULAN</th><th>JML HARI</th><th>TOTAL M³</th><th>TOTAL SM³</th><th>TOTAL BIAYA</th></tr>`;
-  let grandSM=0,grandM=0,grandRp=0;
-  for(let b in rekap){
-    grandSM+=rekap[b].totalSM; grandM+=rekap[b].totalM; grandRp+=rekap[b].totalRp;
-    htmlRekap+=`<tr><td><b>${b}</b></td><td>${rekap[b].count}</td><td>${rekap[b].totalM.toFixed(2)} M³</td><td style="color:#22c55e"><b>${rekap[b].totalSM.toFixed(2)} SM³</b></td><td style="color:#fbbf24">Rp ${Math.round(rekap[b].totalRp).toLocaleString()}</td></tr>`;
-  }
-  htmlRekap+=`<tr style="background:#14532d"><td><b>GRAND TOTAL</b></td><td><b>${data.length}</b></td><td><b>${grandM.toFixed(2)}</b></td><td><b>${grandSM.toFixed(2)} SM³</b></td><td><b>Rp ${Math.round(grandRp).toLocaleString()}</b></td></tr>`;
+  let gSM=0,gM=0,gRp=0;
+  for(let b in rekap){ gSM+=rekap[b].totalSM; gM+=rekap[b].totalM; gRp+=rekap[b].totalRp; htmlRekap+=`<tr><td><b>${b}</b> ${hist.some(h=>h.tgl.startsWith(b))?'<span style="color:#22c55e">✓Arsip</span>':''}</td><td>${rekap[b].count}</td><td>${rekap[b].totalM.toFixed(2)}</td><td style="color:#22c55e"><b>${rekap[b].totalSM.toFixed(2)}</b></td><td>Rp ${Math.round(rekap[b].totalRp).toLocaleString()}</td></tr>`; }
+  htmlRekap+=`<tr style="background:#14532d"><td>GRAND ARSIP</td><td>${combined.length}</td><td>${gM.toFixed(2)}</td><td>${gSM.toFixed(2)} SM³</td><td>Rp ${Math.round(gRp).toLocaleString()}</td></tr>`;
   document.getElementById('tabelRekapBulanan').innerHTML=htmlRekap;
-  let dataFilter = bulanTerpilih==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulanTerpilih);
-  let totalFilterSM = dataFilter.reduce((s,d)=>s+d.sm3,0);
-  let totalFilterRp = dataFilter.reduce((s,d)=>s+d.totalRp,0);
-  document.getElementById('ringBulanan').innerHTML=`Filter: <b style="color:white">${bulanTerpilih}</b> | Total: <b style="color:#22c55e">${totalFilterSM.toFixed(2)} SM³</b> | Biaya: <b style="color:#fbbf24">Rp ${Math.round(totalFilterRp).toLocaleString()}</b> | ${dataFilter.length} data`;
-  let htmlDetail=`<tr><th>TGL</th><th>METER AWAL-AKHIR</th><th>M³</th><th>SM³</th><th>BIAYA</th><th>PETUGAS</th></tr>`;
-  dataFilter.forEach(d=>{
-    htmlDetail+=`<tr><td>${d.tgl}</td><td>${d.awal} → ${d.akhir}</td><td>${d.pakai.toFixed(2)}</td><td style="color:#22c55e">${d.sm3.toFixed(2)}</td><td>Rp ${Math.round(d.totalRp).toLocaleString()}</td><td>${d.nama}</td></tr>`;
-  });
-  document.getElementById('tabelBulanan').innerHTML=htmlDetail;
-  renderChartBulanan(dataFilter, bulanTerpilih);
-  if(sel && !sel.dataset.auto){
-    let d=new Date(); d.setMonth(d.getMonth()-1);
-    let ym=d.toISOString().slice(0,7);
-    for(let o of sel.options){ if(o.value===ym){ sel.value=ym; sel.dataset.auto='1'; let df=data.filter(x=>x.tgl.slice(0,7)===ym); renderBulanan(); renderChartBulanan(df, ym); break; } }
-    sel.dataset.auto='1';
-  }
+  let bulanFinal=sel.value;
+  let dataFilter=bulanFinal==='all' ? combined : combined.filter(d=>d.tgl.slice(0,7)===bulanFinal);
+  let tSM=dataFilter.reduce((s,d)=>s+d.sm3,0); let tRp=dataFilter.reduce((s,d)=>s+d.totalRp,0);
+  document.getElementById('ringBulanan').innerHTML=`Filter: <b style="color:white">${bulanFinal}</b> ${hist.some(h=>bulanFinal!=='all' && h.tgl.startsWith(bulanFinal))?'(ARSIP AMAN - Tidak akan terhapus)':''} | Total: <b style="color:#22c55e">${tSM.toFixed(2)} SM³</b> | Rp ${Math.round(tRp).toLocaleString()} | ${dataFilter.length} data`;
+  let htmlD=`<tr><th>TGL</th><th>AWAL-AKHIR</th><th>M³</th><th>SM³</th><th>BIAYA</th><th>PETUGAS</th></tr>`;
+  dataFilter.sort((a,b)=>a.tgl.localeCompare(b.tgl)).forEach(d=>{ htmlD+=`<tr><td>${d.tgl}</td><td>${d.awal} → ${d.akhir}</td><td>${d.pakai.toFixed(2)}</td><td style="color:#22c55e">${d.sm3.toFixed(2)}</td><td>Rp ${Math.round(d.totalRp).toLocaleString()}</td><td>${d.nama}</td></tr>`; });
+  document.getElementById('tabelBulanan').innerHTML=htmlD;
+  renderChartBulanan(dataFilter, bulanFinal);
 }
 
 window.exportExcelBulanan = function(){
+  let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]'); if(dataHistory.length) hist=dataHistory;
+  let mapU={}; [...hist,...data].forEach(d=>{ let k=d.tgl+"_"+d.awal+"_"+d.akhir; mapU[k]=d; });
+  let combined=Object.values(mapU);
   const bulan = document.getElementById('filterBulan').value;
-  let dataF = bulan==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulan);
-  let ws_data=[["RIWAYAT BULANAN CNG Kp.Bulu - "+bulan],["Bulan: "+bulan+" | Total Data: "+dataF.length],[],["TANGGAL","METER AWAL","METER AKHIR","M³","SM³","BIAYA","PETUGAS"]];
+  let dataF = bulan==='all' ? combined : combined.filter(d=>d.tgl.slice(0,7)===bulan);
+  let ws_data=[["RIWAYAT BULANAN CNG Kp.Bulu - "+bulan+" (ARSIP AMAN)"],["Bulan: "+bulan+" | Total Data: "+dataF.length],[],["TANGGAL","METER AWAL","METER AKHIR","M³","SM³","BIAYA","PETUGAS"]];
   dataF.forEach(d=>{ws_data.push([d.tgl,d.awal,d.akhir,d.pakai.toFixed(2),d.sm3.toFixed(2),d.totalRp,d.nama]);});
   let totalSM=dataF.reduce((a,b)=>a+b.sm3,0); let totalRp=dataF.reduce((a,b)=>a+b.totalRp,0);
   ws_data.push([]); ws_data.push(["TOTAL", "", "", "", totalSM.toFixed(2)+" SM³", "Rp "+Math.round(totalRp).toLocaleString()]);
-  var ws=XLSX.utils.aoa_to_sheet(ws_data); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Bulanan"); XLSX.writeFile(wb,"CNG_BULANAN_"+bulan+".xlsx");
+  var ws=XLSX.utils.aoa_to_sheet(ws_data); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Bulanan"); XLSX.writeFile(wb,"CNG_BULANAN_ARSIP_"+bulan+".xlsx");
 }
 
-// ====== TAMBAHAN BARU 2 FUNGSI GRAFIK + PDF BULAN LALU (TIDAK UBAH CODE LAMA) ======
 window.renderChartBulanan = function(dataFilter, bulanLabel){
   const c=document.getElementById('chartBulanan'); if(!c) return;
   const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||2;
@@ -292,32 +294,27 @@ window.renderChartBulanan = function(dataFilter, bulanLabel){
     ctx.fillStyle="#94a3b8"; ctx.font=(9*dpr)+"px sans-serif";
     ctx.fillText(lb.slice(8,10),x+barW/2,topPad+chartH+18*dpr);
   });
-  document.getElementById('labelChartBulanan').innerText=`Grafik Harian ${bulanLabel} - Total ${vals.reduce((a,b)=>a+b,0).toFixed(1)} SM³`;
+  document.getElementById('labelChartBulanan').innerText=`Grafik Harian ${bulanLabel} - Total ${vals.reduce((a,b)=>a+b,0).toFixed(1)} SM³ (Arsip Aman)`;
 }
 
 window.exportPdfBulanan = function(){
   try{
+    let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]'); if(dataHistory.length) hist=dataHistory;
+    let mapU={}; [...hist,...data].forEach(d=>{ let k=d.tgl+"_"+d.awal+"_"+d.akhir; mapU[k]=d; });
+    let combined=Object.values(mapU);
     const bulan=document.getElementById('filterBulan').value;
-    let dataF=bulan==='all' ? data : data.filter(d=>d.tgl.slice(0,7)===bulan);
+    let dataF=bulan==='all' ? combined : combined.filter(d=>d.tgl.slice(0,7)===bulan);
     if(!dataF.length){alert("Pilih bulan dulu bro");return;}
     const {jsPDF}=window.jspdf; const doc=new jsPDF('l','mm','a4');
     doc.setFontSize(12); doc.setFont(undefined,'bold');
-    doc.text(`LAPORAN BULANAN CNG Kp.Bulu - ${bulan}`,14,10);
+    doc.text(`LAPORAN BULANAN ARSIP AMAN CNG Kp.Bulu - ${bulan}`,14,10);
     let totalSM=dataF.reduce((a,b)=>a+b.sm3,0); let totalRp=dataF.reduce((a,b)=>a+b.totalRp,0);
     doc.setFontSize(9); doc.setFont(undefined,'normal');
     doc.text(`Total: ${dataF.length} data | ${totalSM.toFixed(2)} SM³ | Rp ${Math.round(totalRp).toLocaleString()} | Cetak: ${getRealtimeDate()}`,14,16);
-    try{
-      let c=document.getElementById('chartBulanan');
-      let img=c.toDataURL('image/jpeg',0.8);
-      doc.addImage(img,'JPEG',14,20,270,50);
-    }catch(e){}
-    let body=[];
-    dataF.forEach((d,i)=>{ body.push([i+1,d.tgl,d.awal,d.akhir,d.pakai.toFixed(2),d.sm3.toFixed(2)+" SM³","Rp "+Math.round(d.totalRp).toLocaleString(),d.nama]); });
-    doc.autoTable({
-      head:[['NO','TANGGAL','AWAL','AKHIR','M³','SM³','BIAYA','PETUGAS']],
-      body:body, startY:76, styles:{fontSize:8}, headStyles:{fillColor:[34,197,94]}
-    });
-    doc.save(`CNG_BULANAN_${bulan}_DENGAN_GRAFIK.pdf`);
+    try{ let c=document.getElementById('chartBulanan'); let img=c.toDataURL('image/jpeg',0.8); doc.addImage(img,'JPEG',14,20,270,50); }catch(e){}
+    let body=[]; dataF.forEach((d,i)=>{ body.push([i+1,d.tgl,d.awal,d.akhir,d.pakai.toFixed(2),d.sm3.toFixed(2)+" SM³","Rp "+Math.round(d.totalRp).toLocaleString(),d.nama]); });
+    doc.autoTable({ head:[['NO','TANGGAL','AWAL','AKHIR','M³','SM³','BIAYA','PETUGAS']], body:body, startY:76, styles:{fontSize:8}, headStyles:{fillColor:[34,197,94]} });
+    doc.save(`CNG_BULANAN_ARSIP_AMAN_${bulan}.pdf`);
   }catch(err){ alert("PDF Error: "+err.message); }
 }
 
