@@ -33,9 +33,63 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 .btn-hapus{background:#ef4444;color:#fff;padding:6px 8px;border-radius:6px;font-size:10px;font-weight:bold;margin-left:3px}
 .btn-cancel{background:#64748b;color:#fff;width:100%;margin-top:6px;display:none}
 .mode-edit{border-color:#fbbf24 !important; box-shadow:0 0 10px rgba(251,191,36,.3)}
+/* ===== SIDEBAR BARU - TIDAK MENGUBAH CODE LAMA ===== */
+.layout{display:flex;align-items:flex-start}
+.sidebar{width:320px;min-width:320px;position:sticky;top:0;height:100vh;overflow-y:auto;background:#0f172a;border-right:2px solid #1e293b;padding:14px;box-sizing:border-box}
+.sidebar-logo{font-weight:bold;font-size:16px;color:#22c55e;line-height:1.2}
+.sidebar-logo span{font-size:11px;color:#94a3b8;font-weight:normal}
+.sidebar-menu{margin:14px 0}
+.sidebar-menu a{display:block;color:white;text-decoration:none;padding:11px 10px;border-radius:10px;background:#1e293b;margin-bottom:8px;font-size:13px;font-weight:bold}
+.sidebar-menu a.active{background:#14532d;border:1px solid #22c55e}
+.sidebar .card{margin-bottom:0}
+.sidebar .card table{min-width:100%}
+.sidebar .card select{width:100%}
+.main-content{flex:1;padding:14px;min-width:0}
+.btn-toggle-sidebar{display:none;background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;font-weight:bold;margin-bottom:10px}
+@media(max-width:900px){
+  .layout{flex-direction:column}
+  .sidebar{display:none;width:100%;min-width:100%;height:auto;position:relative}
+  .sidebar.open{display:block}
+  .main-content{padding:0;width:100%}
+  .btn-toggle-sidebar{display:block}
+}
 </style>
 </head>
 <body>
+<button class="btn-toggle-sidebar" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ MENU / RIWAYAT BULANAN</button>
+<div class="layout">
+
+<!-- ===== SIDEBAR START ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">⛽ MONITORING CNG<br><span>Kp.Bulu - GACOAN - MasTech V.01</span></div>
+  <div class="sidebar-menu">
+    <a href="#top" class="active">📊 Dashboard</a>
+    <a href="#cardForm">📝 Input BAST</a>
+    <a href="#tabel">📋 Rincian Data</a>
+    <a href="#riwayatBulananCard">📅 Riwayat Bulanan ⬇️ Ada di bawah ini</a>
+  </div>
+
+  <!-- RIWAYAT BULANAN PINDAH KE SIDEBAR - CODE ASLI TIDAK DIUBAH -->
+  <div class="card" id="riwayatBulananCard" style="border:2px solid #22c55e;background:#0f172a">
+  <b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN</b>
+  <div class="row" style="margin-top:10px">
+  <select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e"><option value="all">Semua Bulan</option></select>
+  <button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:100px">📊 Excel</button>
+  <button onclick="exportPdfBulanan()" class="btn-pdf" style="max-width:100px;background:#f59e0b">📄 PDF</button>
+  </div>
+  <div class="stat" id="ringBulanan" style="margin-top:10px;color:#fbbf24">Belum ada data bulanan</div>
+  <div style="background:#1e293b;border-radius:12px;padding:8px;margin-top:10px"><canvas id="chartBulanan" height="280"></canvas><div class="stat" id="labelChartBulanan" style="text-align:center;margin-top:4px">Grafik Harian Bulan Lalu</div></div>
+  <div style="overflow:auto"><table id="tabelRekapBulanan" style="min-width:600px"></table></div>
+  <div style="overflow:auto;margin-top:12px"><table id="tabelBulanan" style="min-width:600px"></table></div>
+  </div>
+  <!-- RIWAYAT BULANAN END -->
+
+  <div class="footer" style="border:none">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01 - ARSIP AMAN</div>
+</aside>
+<!-- ===== SIDEBAR END ===== -->
+
+<!-- ===== MAIN CONTENT - CODE LAMA LU UTUH ===== -->
+<main class="main-content" id="top">
 <h1>⛽ CNG Kp.Bulu <span id="badge" class="badge-cloud">● CONNECTING </span></h1>
 <div class="row">
 <div class="card" style="flex:1"><div class="stat">Hari Ini SM³</div><div class="big" id="todayUse">0 SM³</div><div class="stat" id="todayDetail">0 data</div></div>
@@ -61,20 +115,9 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <button class="btn-del-all" onclick="askDeleteAll()">🗑️ Hapus Semua (Sync All)</button>
 </div>
 <div class="card" style="background:#0f172a;border:1px solid #334155"><b style="font-size:12px">RINGKASAN PEMAKAIAN</b><div class="stat" id="ringTotalSM">Total Pemakaian : 0 SM³</div><div class="stat" id="ringTotalM">Total Volume M³ : 0 M³</div><div class="stat" id="ringTotalRp" style="color:#22c55e;font-weight:bold;font-size:13px">Total Biaya : Rp 0</div></div>
-
-<div class="card" style="border:2px solid #22c55e;background:#0f172a">
-<b style="font-size:13px;color:#22c55e">📅 RIWAYAT BULANAN</b>
-<div class="row" style="margin-top:10px">
-<select id="filterBulan" onchange="renderBulanan()" style="flex:1;padding:11px;border-radius:10px;background:#1e293b;color:white;border:2px solid #22c55e"><option value="all">Semua Bulan</option></select>
-<button onclick="exportExcelBulanan()" class="btn-excel" style="max-width:100px">📊 Excel</button>
-<button onclick="exportPdfBulanan()" class="btn-pdf" style="max-width:100px;background:#f59e0b">📄 PDF</button>
-</div>
-<div class="stat" id="ringBulanan" style="margin-top:10px;color:#fbbf24">Belum ada data bulanan</div>
-<div style="background:#1e293b;border-radius:12px;padding:8px;margin-top:10px"><canvas id="chartBulanan" height="280"></canvas><div class="stat" id="labelChartBulanan" style="text-align:center;margin-top:4px">Grafik Harian Bulan Lalu</div></div>
-<div style="overflow:auto"><table id="tabelRekapBulanan" style="min-width:600px"></table></div>
-<div style="overflow:auto;margin-top:12px"><table id="tabelBulanan" style="min-width:600px"></table></div>
-</div>
 <div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01 - ARSIP AMAN</div>
+</main>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -91,10 +134,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db, 'cng-bulu/bastData');
-// ====== TAMBAHAN BARU 1 - ARSIP YANG TIDAK IKUT KEHAPUS ======
 const historyRef = ref(db, 'cng-bulu/arsipBulanan');
 var dataHistory = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
-// ====== END TAMBAHAN ======
 var data=[];var fotoBase64="";var editIndex = null;
 function getRealtimeDate(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0')+"-"+String(n.getDate()).padStart(2,'0');}
 function getRealtimeMonth(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,'0');}
@@ -104,8 +145,6 @@ window.calcLive=function(){var awal=parseFloat(document.getElementById("awal").v
 document.getElementById("tgl").value=getRealtimeDate();
 var lastNama=localStorage.getItem("cngLastNama")||"";if(lastNama)document.getElementById("nama").value=lastNama;
 document.getElementById("foto").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){fotoBase64=ev.target.result;document.getElementById("preview").src=fotoBase64;document.getElementById("preview").style.display="block";};r.readAsDataURL(f);});
-
-// ====== TAMBAHAN BARU 2 - LOAD CLOUD DENGAN ARSIP ======
 function loadCloudFirebase(){
   onValue(dbRef, (snapshot)=>{
     const val = snapshot.val();
@@ -125,11 +164,8 @@ function loadCloudFirebase(){
     }
   });
 }
-// ====== END TAMBAHAN ======
-
 async function saveCloud(){ try{ await set(dbRef, data); }catch(e){} }
 function drawLine(){var c=document.getElementById("chart");var ctx=c.getContext("2d");var dpr=window.devicePixelRatio||2;var W=c.width=c.offsetWidth*dpr;var H=c.height=300*dpr;ctx.clearRect(0,0,W,H);var month=getRealtimeMonth();var map={};var maxDay=0;for(var i=0;i<data.length;i++){if(data[i].tgl.slice(0,7)===month){map[data[i].tgl]=(map[data[i].tgl]||0)+(data[i].sm3||0);var day=parseInt(data[i].tgl.slice(8,10));if(day>maxDay)maxDay=day;}}if(maxDay==0)maxDay=new Date().getDate();var labels=[],vals=[];for(var d=1;d<=maxDay;d++){var ds=month+"-"+String(d).padStart(2,'0');labels.push(ds);vals.push(map[ds]||0);}if(labels.length==0){ctx.fillStyle="#475569";ctx.font=(24*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText("Belum ada data",W/2,H/2);return;}var max=Math.max.apply(null,vals)*1.4;if(max<100)max=100;var leftPad=90*dpr,rightPad=30*dpr,topPad=50*dpr,bottomPad=55*dpr;var chartW=W-leftPad-rightPad,chartH=H-topPad-bottomPad;ctx.strokeStyle="#1e293b";ctx.lineWidth=1;ctx.fillStyle="#64748b";ctx.font=(18*dpr)+"px sans-serif";ctx.textAlign="right";for(var i=0;i<=4;i++){var y=topPad+i*chartH/4;ctx.beginPath();ctx.moveTo(leftPad,y);ctx.lineTo(W-rightPad,y);ctx.stroke();ctx.fillText(Math.round(max-i*max/4)+" SM³",leftPad-12*dpr,y+6*dpr);}ctx.strokeStyle="#22c55e";ctx.lineWidth=4*dpr;ctx.beginPath();ctx.lineJoin="round";ctx.lineCap="round";for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();ctx.lineTo(leftPad+chartW,topPad+chartH);ctx.lineTo(leftPad,topPad+chartH);ctx.closePath();ctx.fillStyle="rgba(34,197,94,0.18)";ctx.fill();for(var i=0;i<labels.length;i++){var x=leftPad+(labels.length==1?chartW/2:i*chartW/(labels.length-1));var y=topPad+chartH-(vals[i]/max)*chartH;if(vals[i]>0){ctx.fillStyle="#ffffff";ctx.font="bold "+(16*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(vals[i].toFixed(0)+" SM³",x,y-24*dpr);}ctx.fillStyle="#94a3b8";ctx.font=(14*dpr)+"px sans-serif";ctx.textAlign="center";ctx.fillText(labels[i].slice(8,10),x,topPad+chartH+24*dpr);}}
-
 function render(){
   var totalM=0,totalSM=0,totalCost=0,todaySM=0,todayM=0;
   var realToday=getRealtimeDate();var realMonth=getRealtimeMonth();
@@ -156,7 +192,6 @@ function render(){
   drawLine();
   if(typeof renderBulanan === 'function') renderBulanan();
 }
-
 window.addData=async function(){
   var nama=document.getElementById("nama").value.trim();
   var tgl=document.getElementById("tgl").value.trim();
@@ -187,8 +222,6 @@ window.exportPDF = async function(){
     var y=doc.lastAutoTable.finalY+8; var totalSM=data.reduce((a,b)=>a+b.sm3,0); var totalRp=data.reduce((a,b)=>a+b.totalRp,0); doc.setFont(undefined,'bold'); doc.text("RINGKASAN: "+totalSM.toFixed(2)+" SM³ | Rp "+Math.round(totalRp).toLocaleString(),14,y); doc.save("BAST_CNG_KpBulu_"+getRealtimeDate()+"_DENGAN_FOTO.pdf");
   }catch(err){ alert("PDF Error: "+err.message); }
 }
-
-// ====== TAMBAHAN BARU 3 - HAPUS SEMUA TAPI ARSIP TETAP AMAN ======
 window.askDeleteAll=async function(){
   if(data.length===0){ alert("Sudah kosong bro"); return; }
   if(!confirm("Hapus "+data.length+" data di SEMUA LAPTOP? \n\nData akan OTOMATIS DIARSIPKAN dulu jadi riwayat bulan lalu TIDAK HILANG!")){
@@ -211,11 +244,9 @@ window.askDeleteAll=async function(){
   await saveCloud();
   alert("✅ Data aktif terhapus, tapi RIWAYAT BULANAN AMAN di arsip! Total arsip: "+dataHistory.length+" data");
 }
-
 window.editData = function(i){ editIndex = i; let d = data[i]; document.getElementById("nama").value = d.nama; document.getElementById("tgl").value = d.tgl; document.getElementById("awal").value = d.awal; document.getElementById("akhir").value = d.akhir; document.getElementById("harga").value = d.harga; document.getElementById("cFactor").value = d.factor; document.getElementById("seriMeter").value = d.seri || "LANDIS+GYR 750HP HP37449"; if(d.foto){ document.getElementById("preview").src = d.foto; document.getElementById("preview").style.display = "block"; fotoBase64 = d.foto; } calcLive(); let btn = document.getElementById("btnSimpanUtama"); btn.innerText = "✏️ UPDATE DATA "+d.nama+" 🚀"; btn.style.background = "#fbbf24"; document.getElementById("btnBatalEdit").style.display = "block"; document.getElementById("labelEdit").style.display = "block"; document.getElementById("labelEdit").innerText = "MODE EDIT: "+d.nama+" - "+d.sm3.toFixed(2)+" SM³ (Baris "+(i+1)+")"; document.getElementById("cardForm").classList.add("mode-edit"); window.scrollTo({top:0, behavior:'smooth'});}
 window.hapusPerData = async function(i){ let d = data[i]; if(confirm("Yakin hapus data "+d.nama+" "+d.sm3.toFixed(2)+" SM³ tanggal "+d.tgl+" ?")){ data.splice(i,1); render(); await saveCloud(); } }
 window.batalEdit = function(){ editIndex = null; fotoBase64 = ""; document.getElementById("btnSimpanUtama").innerText = "+ SIMPAN DATA 🚀"; document.getElementById("btnSimpanUtama").style.background = "#22c55e"; document.getElementById("btnBatalEdit").style.display = "none"; document.getElementById("labelEdit").style.display = "none"; document.getElementById("cardForm").classList.remove("mode-edit"); document.getElementById("nama").value = localStorage.getItem("cngLastNama")||""; document.getElementById("awal").value = ""; document.getElementById("akhir").value = ""; document.getElementById("foto").value = ""; document.getElementById("preview").style.display = "none"; document.getElementById("liveConvert").style.display = "none"; }
-
 window.renderBulanan = function(){
   const sel = document.getElementById('filterBulan');
   let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]');
@@ -253,7 +284,6 @@ window.renderBulanan = function(){
   document.getElementById('tabelBulanan').innerHTML=htmlD;
   renderChartBulanan(dataFilter, bulanFinal);
 }
-
 window.exportExcelBulanan = function(){
   let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]'); if(dataHistory.length) hist=dataHistory;
   let mapU={}; [...hist,...data].forEach(d=>{ let k=d.tgl+"_"+d.awal+"_"+d.akhir; mapU[k]=d; });
@@ -266,7 +296,6 @@ window.exportExcelBulanan = function(){
   ws_data.push([]); ws_data.push(["TOTAL", "", "", "", totalSM.toFixed(2)+" SM³", "Rp "+Math.round(totalRp).toLocaleString()]);
   var ws=XLSX.utils.aoa_to_sheet(ws_data); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Bulanan"); XLSX.writeFile(wb,"CNG_BULANAN_ARSIP_"+bulan+".xlsx");
 }
-
 window.renderChartBulanan = function(dataFilter, bulanLabel){
   const c=document.getElementById('chartBulanan'); if(!c) return;
   const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||2;
@@ -295,7 +324,6 @@ window.renderChartBulanan = function(dataFilter, bulanLabel){
   });
   document.getElementById('labelChartBulanan').innerText=`Grafik Harian ${bulanLabel} - Total ${vals.reduce((a,b)=>a+b,0).toFixed(1)} SM³ (Arsip Aman)`;
 }
-
 window.exportPdfBulanan = function(){
   try{
     let hist = JSON.parse(localStorage.getItem('cngHistoryBulanan')||'[]'); if(dataHistory.length) hist=dataHistory;
@@ -316,7 +344,6 @@ window.exportPdfBulanan = function(){
     doc.save(`CNG_BULANAN_ARSIP_AMAN_${bulan}.pdf`);
   }catch(err){ alert("PDF Error: "+err.message); }
 }
-
 loadCloudFirebase();
 </script>
 </body>
