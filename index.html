@@ -48,6 +48,24 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
   .btn-toggle{display:block;background:#22c55e;color:#000;width:100%;margin-bottom:10px}
   .sidebar.hidden{display:none}
 }
+/* ===== TAMBAHAN BARU - MODE SIANG / MALAM ===== */
+body.light{background:#eef2f7;color:#111827}
+body.light h1{color:#15803d}
+body.light .card{background:#ffffff;border:1px solid #d1d5db;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+body.light .sidebar{background:#ffffff;border:1px solid #d1d5db}
+body.light .sidebar .logo small{color:#6b7280}
+body.light .menu-btn{background:#f3f4f6;color:#111827;border-color:#d1d5db}
+body.light .menu-btn.active{background:#22c55e;color:#000;border-color:#22c55e}
+body.light input, body.light select{background:#ffffff;color:#111827;border-color:#d1d5db}
+body.light input::placeholder{color:#9ca3af}
+body.light th, body.light td{border-bottom:1px solid #e5e7eb}
+body.light th{background:#b91c1c;color:#fbbf24}
+body.light .stat{color:#6b7280}
+body.light .footer{border-top:1px solid #d1d5db;color:#6b7280}
+body.light canvas{background:#0f172a}
+body.light .btn-toggle{background:#22c55e;color:#000}
+#btnTheme{background:#f59e0b;color:#000}
+body.light #btnTheme{background:#0f172a;color:#fff}
 </style>
 </head>
 <body>
@@ -58,6 +76,8 @@ canvas{width:100%;border-radius:12px;background:#0f172a;display:block}
 <div class="logo">⛽ MONITORING CNG<br><small>Kp Bulu - GACOAN - MasTech V.01</small></div>
 <button class="menu-btn active" onclick="showPage('dashboard', this)">📊 Dashboard</button>
 <button class="menu-btn" onclick="showPage('riwayat', this)">📅 Riwayat Bulanan</button>
+<!-- TAMBAHAN BARU - TOMBOL MODE SIANG / MALAM -->
+<button class="menu-btn" id="btnTheme" onclick="toggleTheme()">☀️ Mode Siang</button>
 </aside>
 
 <!-- ===== KONTEN KANAN ===== -->
@@ -372,6 +392,21 @@ window.showPage = function(page, btn){
     document.querySelector('.sidebar').classList.add('hidden');
   }
 }
+
+// ===== TAMBAHAN BARU - MODE SIANG / MALAM =====
+window.toggleTheme = function(){
+  var isLight = document.body.classList.toggle('light');
+  localStorage.setItem('cngTheme', isLight ? 'light' : 'dark');
+  var btn = document.getElementById('btnTheme');
+  if(btn) btn.innerText = isLight ? '🌙 Mode Malam' : '☀️ Mode Siang';
+};
+(function(){
+  if(localStorage.getItem('cngTheme') === 'light'){
+    document.body.classList.add('light');
+    var b = document.getElementById('btnTheme');
+    if(b) b.innerText = '🌙 Mode Malam';
+  }
+})();
 
 loadCloudFirebase();
 </script>
