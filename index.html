@@ -151,7 +151,7 @@ body.light #ringTotalRp{color:#16a34a !important;font-weight:800 !important;font
 </div>
 </div>
 
-<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.02</div>
+<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01 - ARSIP AMAN</div>
 </main>
 </div>
 
@@ -319,9 +319,9 @@ window.renderBulanan = function(){
   });
   let rekap={}; combined.forEach(d=>{ let bul=d.tgl.slice(0,7); if(!rekap[bul]) rekap[bul]={totalSM:0,totalM:0,totalRp:0,count:0}; rekap[bul].totalSM+=d.sm3; rekap[bul].totalM+=d.pakai; rekap[bul].totalRp+=d.totalRp; rekap[bul].count++; });
   let htmlRekap=`<tr><th>BULAN</th><th>JML HARI</th><th>TOTAL M³</th><th>TOTAL SM³</th><th>TOTAL BIAYA</th></tr>`;
-  let gSM=0,gM=0,gRp=0;
-  for(let b in rekap){ gSM+=rekap[b].totalSM; gM+=rekap[b].totalM; gRp+=rekap[b].totalRp; htmlRekap+=`<tr><td><b>${b}</b> ${hist.some(h=>h.tgl.startsWith(b))?'<span style="color:#22c55e">✓Arsip</span>':''}</td><td>${rekap[b].count}</td><td>${rekap[b].totalM.toFixed(2)}</td><td style="color:#22c55e"><b>${rekap[b].totalSM.toFixed(2)}</b></td><td>Rp ${Math.round(rekap[b].totalRp).toLocaleString()}</td></tr>`; }
-  htmlRekap+=`<tr style="background:#14532d"><td>GRAND ARSIP</td><td>${gM.toFixed(2)}</td><td>${gSM.toFixed(2)} SM³</td><td>Rp ${Math.round(gRp).toLocaleString()}</td></tr>`;
+  let gSM=0,gM=0,gRp=0,gCount=0;
+  for(let b in rekap){ gSM+=rekap[b].totalSM; gM+=rekap[b].totalM; gRp+=rekap[b].totalRp; gCount+=rekap[b].count; htmlRekap+=`<tr><td><b>${b}</b> ${hist.some(h=>h.tgl.startsWith(b))?'<span style="color:#22c55e">✓Arsip</span>':''}</td><td>${rekap[b].count}</td><td>${rekap[b].totalM.toFixed(2)}</td><td style="color:#22c55e"><b>${rekap[b].totalSM.toFixed(2)}</b></td><td>Rp ${Math.round(rekap[b].totalRp).toLocaleString()}</td></tr>`; }
+  htmlRekap+=`<tr style="background:#14532d;color:white"><td><b>GRAND ARSIP</b></td><td><b>${gCount}</b></td><td><b>${gM.toFixed(2)}</b></td><td><b>${gSM.toFixed(2)} SM³</b></td><td><b>Rp ${Math.round(gRp).toLocaleString()}</b></td></tr>`;
   document.getElementById('tabelRekapBulanan').innerHTML=htmlRekap;
   let bulanFinal=sel.value;
   let dataFilter=bulanFinal==='all' ? combined : combined.filter(d=>d.tgl.slice(0,7)===bulanFinal);
