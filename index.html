@@ -66,6 +66,28 @@ body.light canvas{background:#0f172a}
 body.light .btn-toggle{background:#22c55e;color:#000}
 #btnTheme{background:#f59e0b;color:#000}
 body.light #btnTheme{background:#0f172a;color:#fff}
+/* ===== TAMBAHAN BARU - FIX RIWAYAT BULANAN MODE SIANG, ANGKA JADI ORANGE ===== */
+body.light #page-riwayat .card{background:#ffffff !important;border:2px solid #22c55e !important}
+body.light #page-riwayat .card b{color:#15803d !important}
+body.light #filterBulan{background:#ffffff !important;color:#111827 !important;border-color:#22c55e !important}
+body.light #ringBulanan{color:#111827 !important}
+body.light #ringBulanan b{color:#ff6a00 !important}
+body.light #tabelBulanan{background:#ffffff !important}
+body.light #tabelBulanan th{background:#b91c1c !important;color:#fbbf24 !important}
+body.light #tabelBulanan td{background:#ffffff !important;color:#ff6a00 !important;font-weight:700 !important;border-bottom:1px solid #e5e7eb !important}
+body.light #tabelBulanan tr:nth-child(even) td{background:#fff7ed !important}
+body.light #tabelRekapBulanan{background:#ffffff !important}
+body.light #tabelRekapBulanan th{background:#b91c1c !important;color:#fbbf24 !important}
+body.light #tabelRekapBulanan td{background:#ffffff !important;color:#111827 !important;font-weight:600 !important;border-bottom:1px solid #e5e7eb !important}
+body.light #tabelRekapBulanan td b{color:#ff6a00 !important}
+body.light #tabelRekapBulanan tr:last-child td{background:#fef3c7 !important;color:#111827 !important;font-weight:800 !important}
+body.light #labelChartBulanan{color:#111827 !important}
+/* ===== TAMBAHAN BARU - FIX RINGKASAN PEMAKAIAN MODE SIANG ===== */
+body.light #page-dashboard .card:last-child{background:#ffffff !important;border:2px solid #ff6a00 !important;box-shadow:0 4px 12px rgba(0,0,0,.08) !important}
+body.light #page-dashboard .card:last-child b{color:#0f172a !important}
+body.light #ringTotalSM{color:#111827 !important;font-weight:700 !important}
+body.light #ringTotalM{color:#111827 !important;font-weight:700 !important}
+body.light #ringTotalRp{color:#16a34a !important;font-weight:800 !important;font-size:13px !important}
 </style>
 </head>
 <body>
@@ -129,7 +151,7 @@ body.light #btnTheme{background:#0f172a;color:#fff}
 </div>
 </div>
 
-<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.01 - ARSIP AMAN</div>
+<div class="footer">© 2026 CNG Monitor Kp.Bulu By.MasTech V.02</div>
 </main>
 </div>
 
@@ -299,7 +321,7 @@ window.renderBulanan = function(){
   let htmlRekap=`<tr><th>BULAN</th><th>JML HARI</th><th>TOTAL M³</th><th>TOTAL SM³</th><th>TOTAL BIAYA</th></tr>`;
   let gSM=0,gM=0,gRp=0;
   for(let b in rekap){ gSM+=rekap[b].totalSM; gM+=rekap[b].totalM; gRp+=rekap[b].totalRp; htmlRekap+=`<tr><td><b>${b}</b> ${hist.some(h=>h.tgl.startsWith(b))?'<span style="color:#22c55e">✓Arsip</span>':''}</td><td>${rekap[b].count}</td><td>${rekap[b].totalM.toFixed(2)}</td><td style="color:#22c55e"><b>${rekap[b].totalSM.toFixed(2)}</b></td><td>Rp ${Math.round(rekap[b].totalRp).toLocaleString()}</td></tr>`; }
-  htmlRekap+=`<tr style="background:#14532d"><td>GRAND ARSIP</td><td>${combined.length}</td><td>${gM.toFixed(2)}</td><td>${gSM.toFixed(2)} SM³</td><td>Rp ${Math.round(gRp).toLocaleString()}</td></tr>`;
+  htmlRekap+=`<tr style="background:#14532d"><td>GRAND ARSIP</td><td>${gM.toFixed(2)}</td><td>${gSM.toFixed(2)} SM³</td><td>Rp ${Math.round(gRp).toLocaleString()}</td></tr>`;
   document.getElementById('tabelRekapBulanan').innerHTML=htmlRekap;
   let bulanFinal=sel.value;
   let dataFilter=bulanFinal==='all' ? combined : combined.filter(d=>d.tgl.slice(0,7)===bulanFinal);
